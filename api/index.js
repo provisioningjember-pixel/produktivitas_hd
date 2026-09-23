@@ -7,6 +7,7 @@ const app = express();
 app.use(express.json());
 
 // 1. Konfigurasi Firebase SDK Client
+
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY || "AIzaSyCIEJHWd7EBzC0FeWgtlmNF0CHpPcyCrK4",
   authDomain: process.env.FIREBASE_AUTH_DOMAIN || "forminput-9c324.firebaseapp.com",
@@ -14,8 +15,10 @@ const firebaseConfig = {
   storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "forminput-9c324.firebasestorage.app",
   messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "105974451173",
   appId: process.env.FIREBASE_APP_ID || "1:105974451173:web:d2976fc5ed60dad0d23d0c",
-  databaseURL: process.env.FIREBASE_DATABASE_URL || "https://forminput-9c324-default-rtdb.firebaseio.com"
+  databaseURL: "https://forminput-9c324-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
+
+
 
 // Inisialisasi Firebase & Realtime Database
 const firebaseApp = initializeApp(firebaseConfig);
