@@ -1,20 +1,25 @@
 const express = require('express');
 const TelegramBot = require('node-telegram-bot-api');
-const admin = require('firebase-admin');
+const { initializeApp } = require('firebase/app');
+const { getDatabase, ref, set } = require('firebase/database');
 
 const app = express();
 app.use(express.json());
 
-// 1. Inisialisasi Firebase Admin
-if (!admin.apps.length) {
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: process.env.FIREBASE_DATABASE_URL
-  });
-}
+// 1. Konfigurasi Firebase SDK Client
+const firebaseConfig = {
+  apiKey: process.env.FIREBASE_API_KEY || "AIzaSyCIEJHWd7EBzC0FeWgtlmNF0CHpPcyCrK4",
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN || "forminput-9c324.firebaseapp.com",
+  projectId: process.env.FIREBASE_PROJECT_ID || "forminput-9c324",
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "forminput-9c324.firebasestorage.app",
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "105974451173",
+  appId: process.env.FIREBASE_APP_ID || "1:105974451173:web:d2976fc5ed60dad0d23d0c",
+  databaseURL: process.env.FIREBASE_DATABASE_URL || "https://forminput-9c324-default-rtdb.firebaseio.com"
+};
 
-const db = admin.database();
+// Inisialisasi Firebase & Realtime Database
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getDatabase(firebaseApp);
 
 // 2. Inisialisasi Telegram Bot (Webhook Mode)
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
@@ -37,13 +42,13 @@ app.post('/api/webhook', async (req, res) => {
   try {
     const update = req.body;
 
-    // Pastikan ada payload pesan (message atau edited_message)
+    // Pastikan ada payload pesan
     const message = update.message || update.edited_message;
     if (!message) {
       return res.status(200).send('No message received');
     }
 
-    // Ambil isi pesan teks biasa ATAU caption jika pesan berupa Foto/Dokumen
+    // Ambil isi pesan teks atau caption foto/dokumen
     const textContent = message.text || message.caption || '';
 
     // Cek apakah teks/caption mengandung hashtag #moban (case-insensitive)
@@ -56,7 +61,7 @@ app.post('/api/webhook', async (req, res) => {
       const usernameTeknisi = message.from.username ? `@${message.from.username}` : '';
       const namaTeknisi = `${message.from.first_name || ''} ${message.from.last_name || ''}`.trim();
 
-      // Payload untuk tabel 'permintaan' di Firebase
+      // Payload data tiket
       const payloadPermintaan = {
         ticket_id: ticketId,
         timestamp_created: timestampCreated,
@@ -72,10 +77,10 @@ app.post('/api/webhook', async (req, res) => {
         solusi_ringkas: ''
       };
 
-      // A. INPUT KE FIREBASE: Simpan data tiket ke path /permintaan/{ticket_id}
-      await db.ref(`permintaan/${ticketId}`).set(payloadPermintaan);
+      // A. INPUT KE FIREBASE REALTIME DATABASE
+      await set(ref(db, `permintaan/${ticketId}`), payloadPermintaan);
 
-      // B. BOT RESPON: Kirim pesan konfirmasi ke grup/chat Telegram
+      // B. BOT RESPON: Kirim pesan konfirmasi ke Telegram
       const replyMessage = `✅ **Tiket Permintaan Berhasil Dibuat!**\n\n` +
                            `🎫 **Ticket ID:** \`${ticketId}\`\n` +
                            `👤 **Teknisi:** ${namaTeknisi} (${usernameTeknisi || idTelegramTeknisi})\n` +
@@ -89,7 +94,6 @@ app.post('/api/webhook', async (req, res) => {
       });
     }
 
-    // Beri respon OK 200 ke Telegram Webhook
     res.status(200).send('OK');
   } catch (error) {
     console.error('Error handling webhook:', error);
@@ -97,7 +101,6 @@ app.post('/api/webhook', async (req, res) => {
   }
 });
 
-// Endpoint tes status server
 app.get('/', (req, res) => {
   res.send('Bot Telegram #moban Helpdesk Server Ready!');
 });
