@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Monitoring & Helpdesk System</title>
+  <title>Helpdesk System & Monitoring</title>
   
   <!-- Bootstrap 5 CSS & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -15,7 +15,7 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* KUSTOMISASI BUBBLE CHAT (HIJAU WHATSAPP / TELEGRAM SOFT) */
+    /* KUSTOMISASI BUBBLE CHAT (HIJAU WHATSAPP/TELEGRAM ELEGANT) */
     .chat-container {
       max-height: 400px;
       overflow-y: auto;
@@ -63,6 +63,16 @@
     }
     .badge-open { background-color: #ffc107; color: #000; }
     .badge-closed { background-color: #198754; color: #fff; }
+    
+    /* STYLE TAB NAV */
+    .nav-tabs .nav-link {
+      color: #495057;
+      font-weight: 600;
+    }
+    .nav-tabs .nav-link.active {
+      color: #0d6efd;
+      border-bottom: 3px solid #0d6efd;
+    }
   </style>
 </head>
 <body>
@@ -70,134 +80,144 @@
   <!-- NAVBAR / HEADER -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container-fluid">
-      <a class="navbar-brand fw-bold" href="#"><i class="bi bi-headset me-2"></i>Helpdesk & Monitoring Dashboard</a>
+      <a class="navbar-brand fw-bold" href="#"><i class="bi bi-headset me-2"></i>Helpdesk & Monitoring System</a>
     </div>
   </nav>
 
   <div class="container-fluid px-4">
     
-    <!-- ==================== DASHBOARD EVALUASI & ANALITIK ==================== -->
-    <div class="card mb-4 border-0 shadow-sm">
-      <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
-        <h5 class="m-0 fw-bold"><i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard Evaluasi Kinerja</h5>
-        
-        <!-- FILTER PERIODE TANGGAL -->
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-          <label class="form-label mb-0 fw-semibold small text-muted">Periode Evaluasi:</label>
-          <select id="filterPeriode" class="form-select form-select-sm" style="width: auto;">
-            <option value="today" selected>Hari Ini</option>
-            <option value="week">Minggu Ini</option>
-            <option value="month">Bulan Ini</option>
-            <option value="custom">Custom Tanggal</option>
-          </select>
-
-          <!-- Input Custom Date -->
-          <div id="customDateContainer" class="d-none d-flex align-items-center gap-1">
-            <input type="date" id="startDate" class="form-control form-control-sm">
-            <span class="small text-muted">s/d</span>
-            <input type="date" id="endDate" class="form-control form-control-sm">
-            <button id="btnApplyCustomDate" class="btn btn-sm btn-primary"><i class="bi bi-filter"></i> Terapkan</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- METRIC CARDS METRICS -->
-    <div class="row g-3 mb-4">
-      <div class="col-md-3">
-        <div class="card border-0 bg-primary bg-gradient text-white p-3 shadow-sm">
-          <small class="text-uppercase fw-semibold opacity-75">Total Open (Aktif Saat Ini)</small>
-          <h2 class="mb-0 fw-bold" id="dashOpenCount">0</h2>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card border-0 bg-warning bg-gradient text-dark p-3 shadow-sm">
-          <small class="text-uppercase fw-semibold opacity-75">Sedang Dikerjakan</small>
-          <h2 class="mb-0 fw-bold" id="dashInProgressCount">0</h2>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card border-0 bg-success bg-gradient text-white p-3 shadow-sm">
-          <small class="text-uppercase fw-semibold opacity-75">Tiket Closed (Periode Ini)</small>
-          <h2 class="mb-0 fw-bold" id="dashClosedCount">0</h2>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card border-0 bg-info bg-gradient text-white p-3 shadow-sm">
-          <small class="text-uppercase fw-semibold opacity-75">Rata-rata Durasi Penanganan</small>
-          <h2 class="mb-0 fw-bold" id="dashAvgResponse">0 mnt</h2>
-        </div>
-      </div>
-    </div>
-
-    <!-- TABEL MONITORING DASHBOARD -->
-    <div class="row g-3 mb-5">
-      <!-- TABEL TIKET SEDANG DIKERJAKAN -->
-      <div class="col-lg-6">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-header bg-white fw-bold py-3">
-            <i class="bi bi-gear-wide-connected me-2 text-warning"></i>Tiket Sedang Dikerjakan (Monitoring Realtime)
-          </div>
-          <div class="card-body p-0 table-responsive">
-            <table class="table table-hover align-middle mb-0 text-sm">
-              <thead class="table-light">
-                <tr>
-                  <th>ID Tiket</th>
-                  <th>Teknisi</th>
-                  <th>Petugas HD</th>
-                  <th>Waktu Taken</th>
-                </tr>
-              </thead>
-              <tbody id="tabelDashInProgress"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- TABEL PERFORMA PERSONEL HD -->
-      <div class="col-lg-6">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-header bg-white fw-bold py-3">
-            <i class="bi bi-trophy me-2 text-success"></i>Rekap Performa HD (Tiket Closed)
-          </div>
-          <div class="card-body p-0 table-responsive">
-            <table class="table table-hover align-middle mb-0 text-sm">
-              <thead class="table-light">
-                <tr>
-                  <th>Nama Petugas HD</th>
-                  <th>NIK</th>
-                  <th>Tiket Selesai</th>
-                </tr>
-              </thead>
-              <tbody id="tabelDashHDPerformance"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ==================== TAB MANAJEMEN TIKET ==================== -->
-    <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
-      <li class="nav-item">
-        <button class="nav-link active fw-bold" id="tab-open-btn" data-bs-toggle="tab" data-bs-target="#tab-open">
+    <!-- ==================== TAB NAVIGATION BAR ==================== -->
+    <ul class="nav nav-tabs mb-4" id="mainTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-dashboard-btn" data-bs-toggle="tab" data-bs-target="#tab-dashboard" type="button" role="tab">
+          <i class="bi bi-speedometer2 me-1"></i> Dashboard Evaluasi
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-open-btn" data-bs-toggle="tab" data-bs-target="#tab-open" type="button" role="tab">
           Tiket Open <span class="badge bg-danger ms-1" id="countOpen">0</span>
         </button>
       </li>
-      <li class="nav-item">
-        <button class="nav-link fw-bold" id="tab-my-btn" data-bs-toggle="tab" data-bs-target="#tab-my">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-my-btn" data-bs-toggle="tab" data-bs-target="#tab-my" type="button" role="tab">
           Tiket Saya <span class="badge bg-warning text-dark ms-1" id="countMy">0</span>
         </button>
       </li>
-      <li class="nav-item">
-        <button class="nav-link fw-bold" id="tab-closed-btn" data-bs-toggle="tab" data-bs-target="#tab-closed">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-closed-btn" data-bs-toggle="tab" data-bs-target="#tab-closed" type="button" role="tab">
           Tiket Closed <span class="badge bg-secondary ms-1" id="countClosed">0</span>
         </button>
       </li>
     </ul>
 
-    <div class="tab-content">
-      <!-- TAB OPEN -->
-      <div class="tab-pane fade show active" id="tab-open">
+    <!-- ==================== TAB CONTENT AREA ==================== -->
+    <div class="tab-content" id="mainTabContent">
+      
+      <!-- 1. TAB MENU DASHBOARD EVALUASI -->
+      <div class="tab-pane fade show active" id="tab-dashboard" role="tabpanel">
+        
+        <!-- CONTROL FILTER TANGGAL -->
+        <div class="card mb-4 border-0 shadow-sm">
+          <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <h5 class="m-0 fw-bold"><i class="bi bi-bar-chart-line me-2 text-primary"></i>Evaluasi Performance Helpdesk</h5>
+            
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <label class="form-label mb-0 fw-semibold small text-muted">Periode Filter:</label>
+              <select id="filterPeriode" class="form-select form-select-sm" style="width: auto;">
+                <option value="today" selected>Hari Ini</option>
+                <option value="week">Minggu Ini</option>
+                <option value="month">Bulan Ini</option>
+                <option value="custom">Custom Tanggal</option>
+              </select>
+
+              <div id="customDateContainer" class="d-none d-flex align-items-center gap-1">
+                <input type="date" id="startDate" class="form-control form-control-sm">
+                <span class="small text-muted">s/d</span>
+                <input type="date" id="endDate" class="form-control form-control-sm">
+                <button id="btnApplyCustomDate" class="btn btn-sm btn-primary"><i class="bi bi-filter"></i> Terapkan</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- METRIC COUNTER CARDS -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-3">
+            <div class="card border-0 bg-primary bg-gradient text-white p-3 shadow-sm">
+              <small class="text-uppercase fw-semibold opacity-75">Total Open (Aktif)</small>
+              <h2 class="mb-0 fw-bold" id="dashOpenCount">0</h2>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 bg-warning bg-gradient text-dark p-3 shadow-sm">
+              <small class="text-uppercase fw-semibold opacity-75">Sedang Dikerjakan</small>
+              <h2 class="mb-0 fw-bold" id="dashInProgressCount">0</h2>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 bg-success bg-gradient text-white p-3 shadow-sm">
+              <small class="text-uppercase fw-semibold opacity-75">Tiket Closed (Periode Ini)</small>
+              <h2 class="mb-0 fw-bold" id="dashClosedCount">0</h2>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 bg-info bg-gradient text-white p-3 shadow-sm">
+              <small class="text-uppercase fw-semibold opacity-75">Rata-rata Durasi Solve</small>
+              <h2 class="mb-0 fw-bold" id="dashAvgResponse">0 mnt</h2>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABEL ANALISIS DASHBOARD -->
+        <div class="row g-3 mb-4">
+          <!-- TIKET SEDANG DIKERJAKAN -->
+          <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-header bg-white fw-bold py-3 border-bottom">
+                <i class="bi bi-gear-wide-connected me-2 text-warning"></i>Tiket Sedang Dikerjakan & Petugas HD
+              </div>
+              <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0 text-sm">
+                  <thead class="table-light">
+                    <tr>
+                      <th>ID Tiket</th>
+                      <th>Teknisi</th>
+                      <th>Petugas HD</th>
+                      <th>Waktu Taken</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tabelDashInProgress"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- REKAP PERFORMA HD -->
+          <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-header bg-white fw-bold py-3 border-bottom">
+                <i class="bi bi-trophy me-2 text-success"></i>Rekap Performa HD (Tiket Selesai)
+              </div>
+              <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0 text-sm">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Nama Petugas HD</th>
+                      <th>NIK</th>
+                      <th>Total Tiket Closed</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tabelDashHDPerformance"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 2. TAB MENU TIKET OPEN -->
+      <div class="tab-pane fade" id="tab-open" role="tabpanel">
         <div class="card border-0 shadow-sm">
           <div class="card-body p-0 table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -218,8 +238,8 @@
         </div>
       </div>
 
-      <!-- TAB TIKET SAYA -->
-      <div class="tab-pane fade" id="tab-my">
+      <!-- 3. TAB MENU TIKET SAYA -->
+      <div class="tab-pane fade" id="tab-my" role="tabpanel">
         <div class="card border-0 shadow-sm">
           <div class="card-body p-0 table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -239,8 +259,8 @@
         </div>
       </div>
 
-      <!-- TAB CLOSED -->
-      <div class="tab-pane fade" id="tab-closed">
+      <!-- 4. TAB MENU TIKET CLOSED -->
+      <div class="tab-pane fade" id="tab-closed" role="tabpanel">
         <div class="card border-0 shadow-sm">
           <div class="card-body p-0 table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -260,6 +280,7 @@
           </div>
         </div>
       </div>
+
     </div>
 
   </div>
@@ -305,9 +326,9 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import { getDatabase, ref, update, push, onValue } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-    // KONEKSI FIREBASE CONFIG
+    // CONFIG FIREBASE
     const firebaseConfig = {
-      // Isikan konfigurasi Firebase Anda
+      // Isikan dengan konfigurasi Firebase Anda
     };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -322,7 +343,7 @@
     window.globalPermintaanData = {};
     window.activeDiskusiTiketKey = null;
 
-    // DOM References
+    // DOM Elements
     const tabelOpenBody = document.getElementById('tabelOpenBody');
     const tabelMyBody = document.getElementById('tabelMyBody');
     const tabelClosedBody = document.getElementById('tabelClosedBody');
@@ -342,20 +363,18 @@
 
     let selectedImageFile = null;
 
-    // SIMULASI FUNGSI PENGIRIMAN API TELEGRAM
+    // SIMULASI API TELEGRAM
     async function sendTelegramReply(chatId, messageId, text) {
-      console.log(`[API TG] Sending Text to ChatID: ${chatId}`, text);
-      // Ganti logika ini dengan fetch ke endpoint Bot API Telegram Anda.
-      // Kembalikan { ok: false } jika simulasi gagal.
+      console.log(`[API TG] Sending Text: ${chatId}`, text);
       return { ok: true, result: { message_id: Date.now() } };
     }
 
     async function sendTelegramPhoto(chatId, messageId, file, caption) {
-      console.log(`[API TG] Sending Photo to ChatID: ${chatId}`);
+      console.log(`[API TG] Sending Photo: ${chatId}`);
       return { ok: true, result: { message_id: Date.now(), photo: [{ file_id: "photo_123" }] } };
     }
 
-    // LISTENER DATA PERMINTAAN UTAMA
+    // LISTENER FIREBASE UTAMA
     onValue(ref(db, 'permintaan'), (snapshot) => {
       globalPermintaanData = snapshot.val() || {};
       renderTables(globalPermintaanData);
@@ -377,7 +396,7 @@
           const item = data[key];
           const tiketId = item.tiket_id || key;
 
-          // 1. DATA OPEN
+          // 1. OPEN
           if (!item.id_telegram_hd && (!item.status || item.status === 'OPEN' || item.status === '')) {
             openCount++;
             tabelOpenBody.insertAdjacentHTML('beforeend', `
@@ -400,7 +419,7 @@
             `);
           }
 
-          // 2. DATA DIKERJAKAN (TIKET SAYA)
+          // 2. DIKERJAKAN (TIKET SAYA)
           if (String(item.id_telegram_hd) === String(activeUser.id_telegram) && item.status === 'DIKERJAKAN') {
             myCount++;
             const selectedConfig = item.kategori_pekerjaan === '/config' ? 'selected' : '';
@@ -431,7 +450,7 @@
             `);
           }
 
-          // 3. DATA CLOSED
+          // 3. CLOSED
           if (item.status === 'CLOSED' || item.status === 'SELESAI') {
             closedCount++;
             tabelClosedBody.insertAdjacentHTML('beforeend', `
@@ -458,15 +477,15 @@
       countClosed.innerText = closedCount;
 
       if (openCount === 0) tabelOpenBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada tiket masuk.</td></tr>`;
-      if (myCount === 0) tabelMyBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Tidak ada tiket aktif yang sedang Anda kerjakan.</td></tr>`;
-      if (closedCount === 0) tabelClosedBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada riwayat tiket selesai.</td></tr>`;
+      if (myCount === 0) tabelMyBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Tidak ada tiket aktif yang Anda kerjakan.</td></tr>`;
+      if (closedCount === 0) tabelClosedBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada tiket selesai.</td></tr>`;
 
       attachTableEvents();
       renderDashboardAnalytics();
     }
 
     function attachTableEvents() {
-      // EVENT TAKE ORDER WITH TELEGRAM VALIDATION
+      // TAKE ORDER
       document.querySelectorAll('.btn-take').forEach(btn => {
         btn.onclick = async (e) => {
           const key = e.currentTarget.getAttribute('data-key');
@@ -485,7 +504,7 @@
               const resTG = await sendTelegramReply(targetChatId, targetMessageId, pesanReply);
               
               if (!resTG || !resTG.ok) {
-                alert('⚠️ Gagal mengirim notifikasi ke Telegram! Proses Take Order dibatalkan.');
+                alert('⚠️ Gagal mengirim notifikasi ke Telegram! Take Order dibatalkan.');
                 return;
               }
 
@@ -516,14 +535,14 @@
         };
       });
 
-      // EVENT CLOSE TICKET WITH TELEGRAM VALIDATION
+      // CLOSE TICKET
       document.querySelectorAll('.btn-close-ticket').forEach(btn => {
         btn.onclick = async (e) => {
           const key = e.currentTarget.getAttribute('data-key');
           const item = globalPermintaanData[key];
 
           if (!item.kategori_pekerjaan) {
-            alert('Pilih Kategori Pekerjaan terlebih dahulu!');
+            alert('Harap pilih Kategori Pekerjaan terlebih dahulu!');
             return;
           }
 
@@ -541,7 +560,7 @@
                 const resTG = await sendTelegramReply(targetChatId, targetMessageId, pesanClose);
 
                 if (!resTG || !resTG.ok) {
-                  alert('⚠️ Gagal mengirim notifikasi ke Telegram! Penutupan tiket dibatalkan.');
+                  alert('⚠️ Gagal mengirim notifikasi ke Telegram! Close tiket dibatalkan.');
                   return;
                 }
 
@@ -570,7 +589,7 @@
         };
       });
 
-      // EVENT MODAL DISKUSI
+      // MODAL DISKUSI
       document.querySelectorAll('.btn-diskusi').forEach(btn => {
         btn.onclick = (e) => {
           activeDiskusiTiketKey = e.currentTarget.getAttribute('data-key');
@@ -583,7 +602,7 @@
         };
       });
 
-      // EVENT UPDATE KATEGORI PEKERJAAN
+      // UPDATE KATEGORI PEKERJAAN
       document.querySelectorAll('.select-kategori').forEach(select => {
         select.onchange = async (e) => {
           const key = e.currentTarget.getAttribute('data-key');
@@ -597,7 +616,7 @@
       });
     }
 
-    // ==================== DISKUSI CHAT & KONTROL KIRIM ====================
+    // ==================== DISKUSI CHAT & VALIDASI TELEGRAM GAGAL ====================
     function listenToDiskusiChat(tiketId) {
       onValue(ref(db, 'diskusi'), (snapshot) => {
         const data = snapshot.val();
@@ -621,7 +640,7 @@
             if (chat.id_file && chat.id_file.startsWith('data:image')) {
               imgElement = `<br><img src="${chat.id_file}" class="chat-img-preview">`;
             } else if (chat.id_file) {
-              imgElement = `<br><small class="opacity-75">[Lampiran Gambar ID: ${chat.id_file}]</small>`;
+              imgElement = `<br><small class="opacity-75">[Gambar/File ID: ${chat.id_file}]</small>`;
             }
 
             chatContainer.insertAdjacentHTML('beforeend', `
@@ -643,7 +662,7 @@
       });
     }
 
-    // HANDLER PASTE & ATTACHMENT
+    // ATTACHMENT & PASTE
     dropZone.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', (e) => {
@@ -684,13 +703,13 @@
       resetImageSelection();
     }
 
-    // FORM SUBMIT DISKUSI DENGAN VALIDASI GAGAL TELEGRAM
+    // FORM SUBMIT DISKUSI DENGAN VALIDASI TELEGRAM GAGAL
     formKirimDiskusi.addEventListener('submit', async (e) => {
       e.preventDefault();
       const pesan = teksBalasan.value.trim();
 
       if (!pesan && !selectedImageFile) {
-        alert('Isi pesan atau lampirkan gambar!');
+        alert('Tulis pesan atau sertakan gambar!');
         return;
       }
 
@@ -706,7 +725,7 @@
         base64ImageStr = await convertFileToBase64(selectedImageFile);
       }
 
-      // 1. Kirim Ke Telegram Dulu
+      // 1. Kirim ke Telegram dulu
       try {
         if (selectedImageFile) {
           telegramRes = await sendTelegramPhoto(targetChatId, targetMessageId, selectedImageFile, pesan);
@@ -714,18 +733,18 @@
           telegramRes = await sendTelegramReply(targetChatId, targetMessageId, pesan);
         }
 
-        // VALIDASI: JIKA TELEGRAM GAGAL TERKIRIM
+        // VALIDASI JIKA TELEGRAM GAGAL
         if (!telegramRes || !telegramRes.ok) {
-          alert('⚠️ GAGAL KIRIM TELEGRAM: Balasan pesan tidak dapat terkirim ke Telegram. Pesan dibatalkan dan TIDAK disimpan ke diskusi!');
-          return; // Hentikan eksekusi, tidak masuk database
+          alert('⚠️ GAGAL TELEGRAM: Balasan pesan gagal dikirim ke Telegram! Pesan dibatalkan dan TIDAK dimasukkan ke tabel diskusi.');
+          return; // Hentikan eksekusi
         }
       } catch (err) {
-        console.error("Error API Telegram:", err);
-        alert('⚠️ KONEKSI GAGAL: Terjadi gangguan jaringan saat mengirim ke Telegram!');
+        console.error("API Telegram error:", err);
+        alert('⚠️ GAGAL KONEKSI: Terjadi kesalahan jaringan saat mengirim ke Telegram!');
         return;
       }
 
-      // 2. Simpan ke Firebase HANYA JIKA Telegram Berhasil
+      // 2. Simpan ke Database HANYA jika Telegram sukses
       const payloadDiskusi = {
         id_tiket: item.tiket_id || activeDiskusiTiketKey,
         id_telegram: activeUser.id_telegram,
@@ -740,8 +759,8 @@
         await push(ref(db, 'diskusi'), payloadDiskusi);
         resetDiskusiForm();
       } catch (err) {
-        console.error('Error Simpan Diskusi ke Firebase:', err);
-        alert('Pesan berhasil terkirim ke Telegram tetapi gagal dicatat ke database.');
+        console.error('Error Simpan Diskusi ke DB:', err);
+        alert('Pesan terkirim ke Telegram tetapi gagal disimpan ke database.');
       }
     });
 
@@ -754,7 +773,7 @@
       });
     }
 
-    // ==================== ENGINE EVALUASI DASHBOARD ====================
+    // ==================== ENGINE EVALUASI DASHBOARD (AMAN / NO ERROR) ====================
     const filterPeriodeSelect = document.getElementById('filterPeriode');
     const customDateContainer = document.getElementById('customDateContainer');
 
@@ -813,33 +832,33 @@
 
       Object.keys(globalPermintaanData).forEach(key => {
         const item = globalPermintaanData[key];
-        const tClose = parseLocaleDate(item.timestamp_close);
-        const tCreate = parseLocaleDate(item.timestamp_created);
+        const tClose = safeDateParse(item.timestamp_close);
+        const tCreate = safeDateParse(item.timestamp_created);
 
-        // Counter Tiket Open Realtime
+        // Open Count
         if (!item.id_telegram_hd && (!item.status || item.status === 'OPEN' || item.status === '')) {
           openCount++;
         }
 
-        // Monitoring Tiket Sedang Dikerjakan
+        // Tiket Sedang Dikerjakan
         if (item.status === 'DIKERJAKAN') {
           inProgressCount++;
           inProgressList.push(item);
         }
 
-        // Evaluasi Tiket Closed Berdasarkan Periode Filter Tanggal
+        // Tiket Closed Sesuai Filter
         if ((item.status === 'CLOSED' || item.status === 'SELESAI') && tClose) {
           if (tClose >= start && tClose <= end) {
             closedCount++;
 
-            // Hitung Rekapitulasi Performa HD
+            // Rekap Performa HD
             const hdKey = item.nik_hd || item.nama_hd || 'Unknown';
             if (!hdPerformanceMap[hdKey]) {
               hdPerformanceMap[hdKey] = { nama: item.nama_hd || 'Tanpa Nama', nik: item.nik_hd || '-', total: 0 };
             }
             hdPerformanceMap[hdKey].total++;
 
-            // Hitung Rata-rata Durasi SLA (Close - Created)
+            // Durasi SLA (Minit)
             if (tCreate) {
               const diffMs = tClose - tCreate;
               totalDurasiSolve += Math.max(0, diffMs / (1000 * 60));
@@ -848,7 +867,7 @@
         }
       });
 
-      // Update Tampilan Metric Card
+      // Update Card Counter
       document.getElementById('dashOpenCount').innerText = openCount;
       document.getElementById('dashInProgressCount').innerText = inProgressCount;
       document.getElementById('dashClosedCount').innerText = closedCount;
@@ -856,7 +875,7 @@
       const avgMinutes = closedCount > 0 ? Math.round(totalDurasiSolve / closedCount) : 0;
       document.getElementById('dashAvgResponse').innerText = `${avgMinutes} mnt`;
 
-      // Render Tabel Tiket Dikerjakan
+      // Render Tabel Dikerjakan
       const tbodyProgress = document.getElementById('tabelDashInProgress');
       tbodyProgress.innerHTML = '';
       if (inProgressList.length === 0) {
@@ -874,7 +893,7 @@
         });
       }
 
-      // Render Tabel Rekap Performa HD
+      // Render Tabel Performa HD
       const tbodyHD = document.getElementById('tabelDashHDPerformance');
       tbodyHD.innerHTML = '';
       const hdList = Object.values(hdPerformanceMap);
@@ -893,7 +912,40 @@
       }
     }
 
-    // LOGIKA AUTO RE-OPEN TIKET CLOSED JIKA USER CHAT KEMBALI
+    // SAFE DATE PARSER UNTUK MENCEGAH EROR PARSING TANGGAL
+    function safeDateParse(dateStr) {
+      if (!dateStr) return null;
+      try {
+        // Coba ISO Standard Parsing
+        const d = new Date(dateStr);
+        if (!isNaN(d.getTime())) return d;
+
+        // Coba Custom Format DD/MM/YYYY, HH.MM.SS
+        const parts = dateStr.split(',');
+        if (parts.length >= 1) {
+          const dateParts = parts[0].trim().split('/');
+          if (dateParts.length === 3) {
+            let timeParts = [0, 0, 0];
+            if (parts[1]) {
+              timeParts = parts[1].trim().replace(/\./g, ':').split(':');
+            }
+            return new Date(
+              parseInt(dateParts[2]), 
+              parseInt(dateParts[1]) - 1, 
+              parseInt(dateParts[0]),
+              parseInt(timeParts[0] || 0),
+              parseInt(timeParts[1] || 0),
+              parseInt(timeParts[2] || 0)
+            );
+          }
+        }
+        return null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // AUTO RE-OPEN
     function listenToDiskusiAutoReopen() {
       onValue(ref(db, 'diskusi'), (snapshot) => {
         const data = snapshot.val();
@@ -913,16 +965,14 @@
           if (targetTiket) {
             const { firebaseKey, data: item } = targetTiket;
 
-            // Jika ada balasan dari teknisi pada tiket yang sudah CLOSED
             if (String(diskusi.id_telegram) !== String(item.id_telegram_hd) && (item.status === 'CLOSED' || item.status === 'SELESAI')) {
               try {
                 await update(ref(db, `permintaan/${firebaseKey}`), {
                   status: 'OPEN',
                   timestamp_close: ""
                 });
-                console.log(`[Auto Re-open] Tiket ${diskusi.id_tiket} dibuka kembali.`);
               } catch (e) {
-                console.error("Gagal auto reopen tiket:", e);
+                console.error("Gagal auto reopen:", e);
               }
             }
           }
@@ -938,29 +988,8 @@
 
     function formatDate(dateStr) {
       if (!dateStr) return '-';
-      try {
-        const d = new Date(dateStr);
-        return isNaN(d.getTime()) ? dateStr : d.toLocaleString('id-ID');
-      } catch (e) {
-        return dateStr;
-      }
-    }
-
-    function parseLocaleDate(dateStr) {
-      if (!dateStr) return null;
-      try {
-        const parts = dateStr.split(',');
-        if (parts.length < 2) return new Date(dateStr);
-        const dateParts = parts[0].trim().split('/');
-        const timeParts = parts[1].trim().split('.');
-        
-        if (dateParts.length === 3) {
-          return new Date(dateParts[2], dateParts[1] - 1, dateParts[0], timeParts[0] || 0, timeParts[1] || 0, timeParts[2] || 0);
-        }
-        return new Date(dateStr);
-      } catch (e) {
-        return null;
-      }
+      const d = safeDateParse(dateStr);
+      return d ? d.toLocaleString('id-ID') : dateStr;
     }
   </script>
 </body>
