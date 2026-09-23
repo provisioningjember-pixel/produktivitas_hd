@@ -6,8 +6,7 @@ const { getDatabase, ref, set } = require('firebase/database');
 const app = express();
 app.use(express.json());
 
-// 1. Konfigurasi Firebase SDK Client
-
+// 1. Konfigurasi Firebase SDK Client (Dipertahankan sesuai kode awal)
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY || "AIzaSyCIEJHWd7EBzC0FeWgtlmNF0CHpPcyCrK4",
   authDomain: process.env.FIREBASE_AUTH_DOMAIN || "forminput-9c324.firebaseapp.com",
@@ -18,26 +17,33 @@ const firebaseConfig = {
   databaseURL: "https://forminput-9c324-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
-
-
 // Inisialisasi Firebase & Realtime Database
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getDatabase(firebaseApp);
 
-// 2. Inisialisasi Telegram Bot (Webhook Mode)
+// 2. Inisialisasi Telegram Bot (Dipertahankan sesuai kode awal)
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN || "8909044741:AAGGON5bVVhPbNAFNEsjMDYGrvR3NSkded4";
 const bot = new TelegramBot(TELEGRAM_TOKEN);
 
-// Helper function untuk generate Unique Ticket ID (Contoh: TK-20260923-8492)
-function generateTicketId() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
+/**
+ * Generate Ticket ID Unik (Format: TK-YYYYMMDD-HHmmss-USERID-MS)
+ * Menggabungkan Waktu Presisi (sampai milidetik) + ID Telegram Teknisi
+ * Dijamin unik & anti-duplikat meskipun inputan bersamaan dalam jumlah besar.
+ */
+function generateTicketId(userId) {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const millis = String(now.getMilliseconds()).padStart(3, '0');
+
   const dateStr = `${year}${month}${day}`;
-  const randomNum = Math.floor(1000 + Math.random() * 9000);
-  
-  return `TK-${dateStr}-${randomNum}`;
+  const timeStr = `${hours}${minutes}${seconds}`;
+
+  return `TK-${dateStr}-${timeStr}-${userId}-${millis}`;
 }
 
 // 3. Endpoint Webhook Vercel
@@ -56,40 +62,59 @@ app.post('/api/webhook', async (req, res) => {
 
     // Cek apakah teks/caption mengandung hashtag #moban (case-insensitive)
     if (textContent.toLowerCase().includes('#moban')) {
-      const ticketId = generateTicketId();
+      const idTelegramTeknisi = String(message.from.id);
+      const ticketId = generateTicketId(idTelegramTeknisi);
       const timestampCreated = new Date(message.date * 1000).toISOString();
 
-      // Data Teknisi pengirim
-      const idTelegramTeknisi = String(message.from.id);
-      const usernameTeknisi = message.from.username ? `@${message.from.username}` : '';
-      const namaTeknisi = `${message.from.first_name || ''} ${message.from.last_name || ''}`.trim();
+      // Penentuan segmen
+      let segmen = '';
+      if (textContent.toLowerCase().includes('#moban')) {
+        segmen = 'B2C';
+      }
 
-      // Payload data tiket
-      const payloadPermintaan = {
-        ticket_id: ticketId,
-        timestamp_created: timestampCreated,
+      // Deteksi File ID Foto (mengambil resolusi/ukuran tertinggi jika ada)
+      let fileId = '';
+      if (message.photo && message.photo.length > 0) {
+        fileId = message.photo[message.photo.length - 1].file_id;
+      }
+
+      // Data Teknisi pengirim
+      const namaTeknisi = `${message.from.first_name || ''} ${message.from.last_name || ''}`.trim();
+      const usernameTeknisi = message.from.username ? `@${message.from.username}` : '';
+
+      // Structure Payload Data Tiket
+      const payloadTiket = {
+        tiket_id: ticketId,
+        segmen: segmen,
+        kategori_pekerjaan: '',
+        chat_id: String(message.chat.id),
+        message_id: String(message.message_id),
+        pesan: textContent,
+        file_id: fileId,
         id_telegram_teknisi: idTelegramTeknisi,
-        username_teknisi: usernameTeknisi,
         nama_teknisi: namaTeknisi,
-        perintah: '#moban',
-        pesan_awal: textContent,
-        status: 'OPEN',
-        id_telegram_hd: '',
+        username_teknisi: usernameTeknisi,
+        id_telegram_hd: '', // Cukup ID HD saja untuk relasi tabel HD
+        timestamp_created: timestampCreated,
         timestamp_taken: '',
-        timestamp_closed: '',
-        solusi_ringkas: ''
+        timestamp_close: '',
+        keterangan: '',
+        status: 'OPEN'
       };
 
       // A. INPUT KE FIREBASE REALTIME DATABASE
-      await set(ref(db, `permintaan/${ticketId}`), payloadPermintaan);
+      await set(ref(db, `permintaan/${ticketId}`), payloadTiket);
 
       // B. BOT RESPON: Kirim pesan konfirmasi ke Telegram
-      const replyMessage = `✅ **Tiket Permintaan Berhasil Dibuat!**\n\n` +
-                           `🎫 **Ticket ID:** \`${ticketId}\`\n` +
-                           `👤 **Teknisi:** ${namaTeknisi} (${usernameTeknisi || idTelegramTeknisi})\n` +
-                           `📌 **Status:** \`OPEN\`\n` +
-                           `📝 **Pesan:**\n_${textContent}_\n\n` +
-                           `*Tim Helpdesk akan segera merespon tiket ini.*`;
+      const replyMessage = 
+        `✅ *Tiket Permintaan Berhasil Dibuat!*\n\n` +
+        `🎫 *Ticket ID:* \`${ticketId}\`\n` +
+        `🏷️ *Segmen:* \`${segmen}\`\n` +
+        `👤 *Teknisi:* ${namaTeknisi} (${usernameTeknisi || idTelegramTeknisi})\n` +
+        `📌 *Status:* \`OPEN\`\n` +
+        `📷 *Lampiran Foto:* ${fileId ? 'Ada' : 'Tidak ada'}\n\n` +
+        `📝 *Pesan:* \n_${textContent}_\n\n` +
+        `_Tim Helpdesk akan segera merespon tiket ini._`;
 
       await bot.sendMessage(message.chat.id, replyMessage, {
         reply_to_message_id: message.message_id,
