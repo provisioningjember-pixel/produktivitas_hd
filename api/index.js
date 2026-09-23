@@ -6,7 +6,7 @@ const { getDatabase, ref, set } = require('firebase/database');
 const app = express();
 app.use(express.json());
 
-// 1. Konfigurasi Firebase SDK Client (Dipertahankan sesuai kode awal)
+// 1. Konfigurasi Firebase SDK Client
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY || "AIzaSyCIEJHWd7EBzC0FeWgtlmNF0CHpPcyCrK4",
   authDomain: process.env.FIREBASE_AUTH_DOMAIN || "forminput-9c324.firebaseapp.com",
@@ -17,19 +17,14 @@ const firebaseConfig = {
   databaseURL: "https://forminput-9c324-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
-// Inisialisasi Firebase & Realtime Database
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getDatabase(firebaseApp);
 
-// 2. Inisialisasi Telegram Bot (Dipertahankan sesuai kode awal)
+// 2. Inisialisasi Telegram Bot
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN || "8909044741:AAGGON5bVVhPbNAFNEsjMDYGrvR3NSkded4";
 const bot = new TelegramBot(TELEGRAM_TOKEN);
 
-/**
- * Generate Ticket ID Unik (Format: TK-YYYYMMDD-HHmmss-USERID-MS)
- * Menggabungkan Waktu Presisi (sampai milidetik) + ID Telegram Teknisi
- * Dijamin unik & anti-duplikat meskipun inputan bersamaan dalam jumlah besar.
- */
+// Generator Ticket ID Anti-Duplikat
 function generateTicketId(userId) {
   const now = new Date();
   const year = now.getFullYear();
@@ -46,43 +41,35 @@ function generateTicketId(userId) {
   return `TK-${dateStr}-${timeStr}-${userId}-${millis}`;
 }
 
-// 3. Endpoint Webhook Vercel
+// 3. Endpoint Webhook
 app.post('/api/webhook', async (req, res) => {
   try {
     const update = req.body;
-
-    // Pastikan ada payload pesan
     const message = update.message || update.edited_message;
+
     if (!message) {
       return res.status(200).send('No message received');
     }
 
-    // Ambil isi pesan teks atau caption foto/dokumen
     const textContent = message.text || message.caption || '';
 
-    // Cek apakah teks/caption mengandung hashtag #moban (case-insensitive)
+    // Filter hashtag #moban
     if (textContent.toLowerCase().includes('#moban')) {
       const idTelegramTeknisi = String(message.from.id);
       const ticketId = generateTicketId(idTelegramTeknisi);
       const timestampCreated = new Date(message.date * 1000).toISOString();
 
-      // Penentuan segmen
-      let segmen = '';
-      if (textContent.toLowerCase().includes('#moban')) {
-        segmen = 'B2C';
-      }
+      let segmen = 'B2C';
 
-      // Deteksi File ID Foto (mengambil resolusi/ukuran tertinggi jika ada)
+      // Ambil file_id jika pesan mengandung foto
       let fileId = '';
       if (message.photo && message.photo.length > 0) {
         fileId = message.photo[message.photo.length - 1].file_id;
       }
 
-      // Data Teknisi pengirim
       const namaTeknisi = `${message.from.first_name || ''} ${message.from.last_name || ''}`.trim();
       const usernameTeknisi = message.from.username ? `@${message.from.username}` : '';
 
-      // Structure Payload Data Tiket
       const payloadTiket = {
         tiket_id: ticketId,
         segmen: segmen,
@@ -94,7 +81,7 @@ app.post('/api/webhook', async (req, res) => {
         id_telegram_teknisi: idTelegramTeknisi,
         nama_teknisi: namaTeknisi,
         username_teknisi: usernameTeknisi,
-        id_telegram_hd: '', // Cukup ID HD saja untuk relasi tabel HD
+        id_telegram_hd: '',
         timestamp_created: timestampCreated,
         timestamp_taken: '',
         timestamp_close: '',
@@ -102,10 +89,10 @@ app.post('/api/webhook', async (req, res) => {
         status: 'OPEN'
       };
 
-      // A. INPUT KE FIREBASE REALTIME DATABASE
+      // Simpan ke Firebase
       await set(ref(db, `permintaan/${ticketId}`), payloadTiket);
 
-      // B. BOT RESPON: Kirim pesan konfirmasi ke Telegram
+      // Balas ke Telegram
       const replyMessage = 
         `✅ *Tiket Permintaan Berhasil Dibuat!*\n\n` +
         `🎫 *Ticket ID:* \`${ticketId}\`\n` +
@@ -122,10 +109,10 @@ app.post('/api/webhook', async (req, res) => {
       });
     }
 
-    res.status(200).send('OK');
+    return res.status(200).send('OK');
   } catch (error) {
     console.error('Error handling webhook:', error);
-    res.status(500).send('Internal Server Error');
+    return res.status(500).send('Internal Server Error');
   }
 });
 
