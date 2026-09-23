@@ -3,303 +3,205 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Helpdesk Workspace - Interactive Ticketing</title>
-  <!-- Bootstrap 5 CSS -->
+  <title>Helpdesk System & Monitoring</title>
+  
+  <!-- Bootstrap 5 CSS & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
   <style>
     body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f8fafc;
-      color: #334155;
+      background-color: #f4f6f9;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    .hidden { display: none !important; }
-
-    /* Login Style */
-    .login-wrapper {
-      min-height: 100vh;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .card-login {
-      border: none;
-      border-radius: 16px;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
-      background: #ffffff;
-    }
-
-    /* Top Navigation Tabs */
-    .top-header {
-      background: #1e293b;
-      color: #ffffff;
-      border-bottom: 1px solid #334155;
-    }
-
-    .nav-tabs-custom {
-      background: #ffffff;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    .nav-tabs-custom .nav-link {
-      color: #64748b;
-      font-weight: 600;
-      border: none;
-      border-bottom: 3px solid transparent;
-      padding: 0.85rem 1.25rem;
-      border-radius: 0;
-      transition: all 0.2s;
-    }
-
-    .nav-tabs-custom .nav-link.active {
-      color: #2563eb;
-      border-bottom-color: #2563eb;
-      background: transparent;
-    }
-
-    /* Cards & Tables */
-    .card-custom {
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-      background: #ffffff;
-    }
-
-    .table thead th {
-      background-color: #f1f5f9;
-      color: #475569;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-weight: 600;
-      padding: 0.85rem 1rem;
-    }
-
-    .table tbody td {
-      padding: 0.85rem 1rem;
-      font-size: 0.9rem;
-      border-color: #f1f5f9;
-    }
-
-    .badge-status {
-      padding: 0.35em 0.75em;
-      font-size: 0.75rem;
-      font-weight: 600;
-      border-radius: 6px;
-    }
-    .badge-open { background-color: #fef3c7; color: #d97706; }
-    .badge-dikerjakan { background-color: #dbeafe; color: #2563eb; }
-    .badge-closed { background-color: #dcfce7; color: #16a34a; }
-
-    /* Chat / Diskusi Style */
-    .chat-box {
-      max-height: 380px;
+    /* BUBBLE CHAT HIJAU SOFT / MINT (WA / TELEGRAM STYLE) */
+    .chat-container {
+      max-height: 400px;
       overflow-y: auto;
-      background-color: #f1f5f9;
-      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
       padding: 12px;
+      background-color: #efeae2;
+      border-radius: 8px;
     }
     .chat-bubble {
-      max-width: 80%;
+      max-width: 75%;
       padding: 10px 14px;
       border-radius: 12px;
-      margin-bottom: 10px;
-      font-size: 0.875rem;
+      font-size: 0.9rem;
       position: relative;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+      word-wrap: break-word;
     }
     .chat-bubble-me {
-      background-color: #2563eb;
-      color: #ffffff;
-      margin-left: auto;
-      border-bottom-right-radius: 2px;
+      background-color: #d1e7dd !important; /* Mint Soft */
+      color: #0f5132 !important;
+      align-self: flex-end;
+      border-top-right-radius: 0px !important;
     }
     .chat-bubble-them {
-      background-color: #ffffff;
-      color: #1e293b;
-      margin-right: auto;
-      border-bottom-left-radius: 2px;
-      border: 1px solid #e2e8f0;
+      background-color: #ffffff !important;
+      color: #212529 !important;
+      align-self: flex-start;
+      border-top-left-radius: 0px !important;
     }
     .chat-img-preview {
       max-width: 100%;
-      max-height: 200px;
-      border-radius: 8px;
-      margin-top: 6px;
+      border-radius: 6px;
+      margin-top: 5px;
     }
-    .paste-dropzone {
-      border: 2px dashed #cbd5e1;
-      border-radius: 8px;
-      padding: 10px;
-      text-align: center;
-      background-color: #fff;
-      cursor: pointer;
-      transition: all 0.2s;
+    .hidden {
+      display: none !important;
     }
-    .paste-dropzone:hover {
-      border-color: #2563eb;
-      background-color: #eff6ff;
+    .badge-status {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .badge-open { background-color: #ffc107; color: #000; }
+    .badge-closed { background-color: #198754; color: #fff; }
+    
+    /* STYLE TAB NAV */
+    .nav-tabs .nav-link {
+      color: #495057;
+      font-weight: 600;
+    }
+    .nav-tabs .nav-link.active {
+      color: #0d6efd;
+      border-bottom: 3px solid #0d6efd;
     }
   </style>
 </head>
 <body>
 
-  <!-- ==================== LOGIN PAGE ==================== -->
-  <div id="loginSection" class="login-wrapper">
-    <div class="card card-login p-4" style="max-width: 400px; width: 90%;">
-      <div class="card-body">
-        <div class="text-center mb-4">
-          <div class="d-inline-flex p-3 bg-primary bg-opacity-10 text-primary rounded-circle mb-3">
-            <i class="bi-headset display-6"></i>
-          </div>
-          <h4 class="fw-bold text-dark">Portal Helpdesk</h4>
-          <p class="text-muted small">Masuk menggunakan NIK & Password Anda</p>
-        </div>
-
-        <div id="loginAlert" class="alert alert-danger py-2 small hidden" role="alert"></div>
-
-        <form id="formLogin">
-          <div class="mb-3">
-            <label for="loginNik" class="form-label fw-semibold small text-secondary">NIK</label>
-            <input type="text" class="form-control form-control-lg fs-6" id="loginNik" placeholder="Masukkan NIK" required>
-          </div>
-          <div class="mb-3">
-            <label for="loginPassword" class="form-label fw-semibold small text-secondary">Password</label>
-            <input type="password" class="form-control form-control-lg fs-6" id="loginPassword" placeholder="••••••••" required>
-          </div>
-          <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold fs-6 mt-2">
-            <i class="bi-box-arrow-in-right me-1"></i> Masuk Sekarang
-          </button>
-        </form>
-      </div>
+  <!-- NAVBAR / HEADER -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="#"><i class="bi bi-headset me-2"></i>Helpdesk & Monitoring System</a>
     </div>
-  </div>
+  </nav>
 
-  <!-- ==================== MAIN DASHBOARD ==================== -->
-  <div id="dashboardSection" class="hidden">
+  <div class="container-fluid px-4">
     
-    <header class="top-header px-4 py-3 d-flex align-items-center justify-content-between">
-      <div class="d-flex align-items-center">
-        <i class="bi bi-cpu-fill text-primary fs-4 me-2"></i>
-        <h5 class="fw-bold mb-0 text-white me-3">HD Workspace</h5>
-      </div>
-      
-      <div class="d-flex align-items-center">
-        <div class="text-end me-3 d-none d-sm-block">
-          <div class="fw-semibold text-white small" id="userNamaDisplay">-</div>
-          <div class="text-muted small" style="font-size: 0.75rem;" id="userNikDisplay">-</div>
-        </div>
-        <button class="btn btn-outline-danger btn-sm rounded-2" id="btnLogout">
-          <i class="bi-box-arrow-right me-1"></i> Logout
+    <!-- TAB NAVIGATION BAR -->
+    <ul class="nav nav-tabs mb-4" id="mainTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-dashboard-btn" data-bs-toggle="tab" data-bs-target="#tab-dashboard" type="button" role="tab">
+          <i class="bi bi-speedometer2 me-1"></i> Dashboard Evaluasi
         </button>
-      </div>
-    </header>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-open-btn" data-bs-toggle="tab" data-bs-target="#tab-open" type="button" role="tab">
+          Tiket Open <span class="badge bg-danger ms-1" id="countOpen">0</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-my-btn" data-bs-toggle="tab" data-bs-target="#tab-my" type="button" role="tab">
+          Tiket Saya <span class="badge bg-warning text-dark ms-1" id="countMy">0</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-closed-btn" data-bs-toggle="tab" data-bs-target="#tab-closed" type="button" role="tab">
+          Tiket Closed <span class="badge bg-secondary ms-1" id="countClosed">0</span>
+        </button>
+      </li>
+    </ul>
 
-    <div class="nav-tabs-custom shadow-sm px-3">
-      <ul class="nav nav-tabs border-0 container-fluid" id="topTab" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="tab-open-btn" data-bs-toggle="tab" data-bs-target="#tab-open" type="button" role="tab">
-            <i class="bi-inbox-fill me-1 text-warning"></i> Tiket Open
-            <span class="badge bg-danger rounded-pill ms-2" id="countOpen">0</span>
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="tab-my-btn" data-bs-toggle="tab" data-bs-target="#tab-my" type="button" role="tab">
-            <i class="bi-person-workspace me-1 text-primary"></i> Tiket Saya
-            <span class="badge bg-primary rounded-pill ms-2" id="countMy">0</span>
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="tab-closed-btn" data-bs-toggle="tab" data-bs-target="#tab-closed" type="button" role="tab">
-            <i class="bi-check-circle-fill me-1 text-success"></i> Tiket Closed
-            <span class="badge bg-success rounded-pill ms-2" id="countClosed">0</span>
-          </button>
-        </li>
-      </ul>
-    </div>
+    <!-- TAB CONTENT AREA -->
+    <div class="tab-content" id="mainTabContent">
+      
+      <!-- 1. TAB MENU DASHBOARD EVALUASI -->
+      <div class="tab-pane fade show active" id="tab-dashboard" role="tabpanel">
+        <div class="card mb-4 border-0 shadow-sm">
+          <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <h5 class="m-0 fw-bold"><i class="bi bi-bar-chart-line me-2 text-primary"></i>Evaluasi Performance Helpdesk</h5>
+            
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <label class="form-label mb-0 fw-semibold small text-muted">Periode Filter:</label>
+              <select id="filterPeriode" class="form-select form-select-sm" style="width: auto;">
+                <option value="today" selected>Hari Ini</option>
+                <option value="week">Minggu Ini</option>
+                <option value="month">Bulan Ini</option>
+                <option value="custom">Custom Tanggal</option>
+              </select>
 
-    <main class="container-fluid p-4">
-      <div class="tab-content" id="topTabContent">
-        
-        <!-- TAB 1: OPEN -->
-        <div class="tab-pane fade show active" id="tab-open" role="tabpanel">
-          <div class="card card-custom">
-            <div class="card-header bg-transparent border-0 pt-3 px-3 d-flex align-items-center justify-content-between">
-              <h6 class="fw-bold mb-0 text-dark"><i class="bi-list-stars text-warning me-2"></i>Antrean Tiket Open</h6>
-            </div>
-            <div class="card-body p-0">
-              <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                  <thead>
-                    <tr>
-                      <th>ID Tiket</th>
-                      <th>Waktu Masuk</th>
-                      <th>Teknisi / Pelapor</th>
-                      <th>Segmen</th>
-                      <th>Pesan / Uraian</th>
-                      <th>Status</th>
-                      <th class="text-center">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tabelOpenBody"></tbody>
-                </table>
+              <div id="customDateContainer" class="d-none d-flex align-items-center gap-1">
+                <input type="date" id="startDate" class="form-control form-control-sm">
+                <span class="small text-muted">s/d</span>
+                <input type="date" id="endDate" class="form-control form-control-sm">
+                <button id="btnApplyCustomDate" class="btn btn-sm btn-primary"><i class="bi bi-filter"></i> Terapkan</button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- TAB 2: TIKET SAYA -->
-        <div class="tab-pane fade" id="tab-my" role="tabpanel">
-          <div class="card card-custom">
-            <div class="card-header bg-transparent border-0 pt-3 px-3">
-              <h6 class="fw-bold mb-0 text-dark"><i class="bi-gear-wide-connected text-primary me-2"></i>Tiket Sedang Dikerjakan</h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-3">
+            <div class="card border-0 bg-primary bg-gradient text-white p-3 shadow-sm">
+              <small class="text-uppercase fw-semibold opacity-75">Total Open (Aktif)</small>
+              <h2 class="mb-0 fw-bold" id="dashOpenCount">0</h2>
             </div>
-            <div class="card-body p-0">
-              <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                  <thead>
-                    <tr>
-                      <th>ID Tiket</th>
-                      <th>Waktu Taken</th>
-                      <th>Teknisi</th>
-                      <th>Pesan / Uraian</th>
-                      <th>Kategori Pekerjaan</th>
-                      <th class="text-center">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tabelMyBody"></tbody>
-                </table>
-              </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 bg-warning bg-gradient text-dark p-3 shadow-sm">
+              <small class="text-uppercase fw-semibold opacity-75">Sedang Dikerjakan</small>
+              <h2 class="mb-0 fw-bold" id="dashInProgressCount">0</h2>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 bg-success bg-gradient text-white p-3 shadow-sm">
+              <small class="text-uppercase fw-semibold opacity-75">Tiket Closed (Periode Ini)</small>
+              <h2 class="mb-0 fw-bold" id="dashClosedCount">0</h2>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 bg-info bg-gradient text-white p-3 shadow-sm">
+              <small class="text-uppercase fw-semibold opacity-75">Rata-rata Durasi Solve</small>
+              <h2 class="mb-0 fw-bold" id="dashAvgResponse">0 mnt</h2>
             </div>
           </div>
         </div>
 
-        <!-- TAB 3: CLOSED -->
-        <div class="tab-pane fade" id="tab-closed" role="tabpanel">
-          <div class="card card-custom">
-            <div class="card-header bg-transparent border-0 pt-3 px-3">
-              <h6 class="fw-bold mb-0 text-dark"><i class="bi-check-all text-success me-2"></i>Riwayat Tiket Closed</h6>
-            </div>
-            <div class="card-body p-0">
-              <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                  <thead>
+        <div class="row g-3 mb-4">
+          <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-header bg-white fw-bold py-3 border-bottom">
+                <i class="bi bi-gear-wide-connected me-2 text-warning"></i>Tiket Sedang Dikerjakan & Petugas HD
+              </div>
+              <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0 text-sm">
+                  <thead class="table-light">
                     <tr>
                       <th>ID Tiket</th>
-                      <th>Waktu Closed</th>
                       <th>Teknisi</th>
                       <th>Petugas HD</th>
-                      <th>Kategori</th>
-                      <th>Status</th>
-                      <th class="text-center">Aksi</th>
+                      <th>Waktu Taken</th>
                     </tr>
                   </thead>
-                  <tbody id="tabelClosedBody"></tbody>
+                  <tbody id="tabelDashInProgress"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-header bg-white fw-bold py-3 border-bottom">
+                <i class="bi bi-trophy me-2 text-success"></i>Rekap Performa HD (Tiket Selesai)
+              </div>
+              <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0 text-sm">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Nama Petugas HD</th>
+                      <th>NIK</th>
+                      <th>Total Tiket Closed</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tabelDashHDPerformance"></tbody>
                 </table>
               </div>
             </div>
@@ -307,64 +209,119 @@
         </div>
 
       </div>
-    </main>
+
+      <!-- 2. TAB MENU TIKET OPEN -->
+      <div class="tab-pane fade" id="tab-open" role="tabpanel">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-0 table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>ID Tiket</th>
+                  <th>Waktu Masuk</th>
+                  <th>Teknisi</th>
+                  <th>Segmen</th>
+                  <th>Pesan</th>
+                  <th>Status</th>
+                  <th class="text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tabelOpenBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. TAB MENU TIKET SAYA -->
+      <div class="tab-pane fade" id="tab-my" role="tabpanel">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-0 table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>ID Tiket</th>
+                  <th>Waktu Taken</th>
+                  <th>Teknisi</th>
+                  <th>Pesan</th>
+                  <th>Kategori Pekerjaan</th>
+                  <th class="text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tabelMyBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. TAB MENU TIKET CLOSED -->
+      <div class="tab-pane fade" id="tab-closed" role="tabpanel">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-0 table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>ID Tiket</th>
+                  <th>Waktu Close</th>
+                  <th>Teknisi</th>
+                  <th>Petugas HD</th>
+                  <th>Kategori</th>
+                  <th>Status</th>
+                  <th class="text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tabelClosedBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
-  <!-- ==================== MODAL DISKUSI / BALAS ==================== -->
-  <div class="modal fade" id="modalDiskusi" tabindex="-1" aria-labelledby="modalDiskusiLabel" aria-hidden="true">
+  <!-- MODAL DISKUSI / CHAT -->
+  <div class="modal fade" id="modalDiskusi" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title fs-6 fw-bold" id="modalDiskusiLabel">
-            <i class="bi-chat-dots-fill me-2"></i>Diskusi Tiket: <span id="diskusiTiketIdHeader">-</span>
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Diskusi Tiket: <span id="diskusiTiketIdHeader" class="text-primary"></span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body p-3">
-          
-          <!-- Chat Area -->
-          <div class="chat-box mb-3" id="chatContainer">
-            <div class="text-center text-muted small py-3">Memuat diskusi...</div>
-          </div>
+        <div class="modal-body">
+          <div id="chatContainer" class="chat-container mb-3"></div>
 
-          <!-- Input Area -->
           <form id="formKirimDiskusi">
-            <div id="previewContainer" class="mb-2 hidden position-relative d-inline-block">
-              <img id="imagePreview" src="" class="img-thumbnail" style="max-height: 100px;">
-              <button type="button" id="btnRemoveImage" class="btn btn-danger btn-sm rounded-circle position-absolute top-0 start-100 translate-middle p-0" style="width: 20px; height: 20px; line-height: 10px;">&times;</button>
-            </div>
-
-            <div class="mb-2">
-              <div class="paste-dropzone small text-muted" id="dropZone">
-                <i class="bi-paperclip me-1"></i> Pilih file foto dari PC / <strong>Tempel Foto Langsung (Ctrl + V)</strong>
-                <input type="file" id="fileInput" accept="image/*" class="d-none">
+            <div id="previewContainer" class="mb-2 hidden">
+              <div class="position-relative d-inline-block">
+                <img id="imagePreview" src="" class="img-thumbnail" style="max-height: 120px;">
+                <button type="button" id="btnRemoveImage" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 rounded-circle p-0" style="width:20px;height:20px;line-height:10px;">&times;</button>
               </div>
             </div>
 
             <div class="input-group">
-              <textarea class="form-control" id="teksBalasan" rows="2" placeholder="Tulis balasan pesan untuk teknisi..." style="resize: none;"></textarea>
-              <button class="btn btn-primary px-4 fw-semibold" type="submit" id="btnSendChat">
-                <i class="bi-send-fill me-1"></i> Kirim
+              <input type="text" id="teksBalasan" class="form-control" placeholder="Tulis balasan pesan...">
+              <button type="button" id="dropZone" class="btn btn-outline-secondary" title="Unggah Gambar">
+                <i class="bi bi-paperclip"></i>
               </button>
+              <input type="file" id="fileInput" accept="image/*" class="d-none">
+              <button type="submit" class="btn btn-primary fw-semibold"><i class="bi bi-send me-1"></i>Kirim</button>
             </div>
           </form>
-
         </div>
       </div>
     </div>
   </div>
 
-  <!-- JS Dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- FIREBASE & TELEGRAM SCRIPT -->
+  <!-- LOGIC SYSTEM MODULE -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, get, update, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import { getDatabase, ref, update, push, onValue } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-    // --- CONFIG FIREBASE ---
+    // KREDENSIAL FIREBASE
     const firebaseConfig = {
-      apiKey: "AIzaSyCIEJHWd7EBzC0FeWgtlmNF0CHpPcyCrK4",
+      apiKey: "AIzaSyCIEJHWd7EBzC0FeWgtImNF0CHpPcyCrK4",
       authDomain: "forminput-9c324.firebaseapp.com",
       projectId: "forminput-9c324",
       storageBucket: "forminput-9c324.firebasestorage.app",
@@ -373,28 +330,23 @@
       databaseURL: "https://forminput-9c324-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
 
-    // --- CONFIG TELEGRAM BOT ---
-    // MASUKKAN TOKEN BOT TELEGRAM ANDA DI SINI
-    const TELEGRAM_BOT_TOKEN = "8909044741:AAGGON5bVVhPbNAFNEsjMDYGrvR3NSkded4"; 
-
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let activeUser = null;
-    let globalPermintaanData = {};
-    let activeDiskusiTiketKey = null;
-    let selectedImageFile = null;
+    // GANTI SESUAI TOKEN BOT TELEGRAM ANDA
+    const BOT_TOKEN = "YOUR_BOT_TOKEN_HERE";
 
-    // Elements
-    const loginSection = document.getElementById('loginSection');
-    const dashboardSection = document.getElementById('dashboardSection');
-    const formLogin = document.getElementById('formLogin');
-    const loginAlert = document.getElementById('loginAlert');
+    // USER HD AKTIF
+    window.activeUser = {
+      id_telegram: "123456789",
+      nama: "Afid Analyst",
+      nik: "HD1001"
+    };
 
-    const userNamaDisplay = document.getElementById('userNamaDisplay');
-    const userNikDisplay = document.getElementById('userNikDisplay');
-    const btnLogout = document.getElementById('btnLogout');
+    window.globalPermintaanData = {};
+    window.activeDiskusiTiketKey = null;
 
+    // DOM Elements
     const tabelOpenBody = document.getElementById('tabelOpenBody');
     const tabelMyBody = document.getElementById('tabelMyBody');
     const tabelClosedBody = document.getElementById('tabelClosedBody');
@@ -404,135 +356,75 @@
 
     const modalDiskusi = new bootstrap.Modal(document.getElementById('modalDiskusi'));
     const chatContainer = document.getElementById('chatContainer');
-    const fileInput = document.getElementById('fileInput');
+    const formKirimDiskusi = document.getElementById('formKirimDiskusi');
+    const teksBalasan = document.getElementById('teksBalasan');
     const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
     const imagePreview = document.getElementById('imagePreview');
     const previewContainer = document.getElementById('previewContainer');
     const btnRemoveImage = document.getElementById('btnRemoveImage');
-    const teksBalasan = document.getElementById('teksBalasan');
-    const formKirimDiskusi = document.getElementById('formKirimDiskusi');
 
-    // ==================== TELEGRAM API FUNCTIONS ====================
-    async function sendTelegramReply(chatId, replyToMessageId, text) {
-      if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN.includes("YOUR_ACTUAL_BOT_TOKEN")) return null;
+    let selectedImageFile = null;
+
+    // --- INTEGRASI REAL TELEGRAM API ---
+    async function sendTelegramReply(chatId, messageId, text) {
+      if (!chatId) return { ok: false, description: "Chat ID Kosong" };
+      
+      const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+      const payload = {
+        chat_id: chatId,
+        text: text,
+        parse_mode: 'HTML'
+      };
+
+      if (messageId) {
+        payload.reply_to_message_id = messageId;
+      }
+
       try {
-        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chatId,
-            reply_to_message_id: replyToMessageId,
-            text: text,
-            parse_mode: 'HTML'
-          })
+          body: JSON.stringify(payload)
         });
         return await response.json();
-      } catch (e) {
-        console.error("Gagal kirim Telegram Text:", e);
-        return null;
+      } catch (err) {
+        console.error("Fetch Telegram Error:", err);
+        return { ok: false };
       }
     }
 
-    async function sendTelegramPhoto(chatId, replyToMessageId, photoFile, caption) {
-  if (!TELEGRAM_BOT_TOKEN) return null;
-  try {
-        const formData = new FormData();
-        formData.append('chat_id', chatId);
-        formData.append('reply_to_message_id', replyToMessageId);
-        formData.append('photo', photoFile);
-        if (caption) formData.append('caption', caption);
+    async function sendTelegramPhoto(chatId, messageId, file, caption) {
+      if (!chatId) return { ok: false, description: "Chat ID Kosong" };
 
-        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
+      const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+      const formData = new FormData();
+      formData.append('chat_id', chatId);
+      formData.append('photo', file);
+      if (caption) formData.append('caption', caption);
+      if (messageId) formData.append('reply_to_message_id', messageId);
+
+      try {
+        const response = await fetch(url, {
           method: 'POST',
           body: formData
         });
         return await response.json();
-      } catch (e) {
-        console.error("Gagal kirim Telegram Photo:", e);
-        return null;
-      }
-    }
-
-    // ==================== AUTH LOGIN ====================
-    formLogin.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      loginAlert.classList.add('hidden');
-
-      const nikInput = document.getElementById('loginNik').value.trim();
-      const passwordInput = document.getElementById('loginPassword').value;
-
-      try {
-        const usersSnapshot = await get(ref(db, 'users_hd'));
-        if (!usersSnapshot.exists()) {
-          showLoginError("Data pengguna HD tidak ditemukan!");
-          return;
-        }
-
-        const usersData = usersSnapshot.val();
-        let matchedUser = null;
-
-        Object.keys(usersData).forEach(key => {
-          const user = usersData[key];
-          if (user.nik === nikInput && user.password === passwordInput) {
-            matchedUser = user;
-          }
-        });
-
-        if (matchedUser) {
-          if (matchedUser.status !== 'AKTIF') {
-            showLoginError("Akun Anda berstatus NONAKTIF!");
-            return;
-          }
-
-          activeUser = matchedUser;
-          sessionStorage.setItem('hd_user', JSON.stringify(matchedUser));
-          initDashboard();
-        } else {
-          showLoginError("NIK atau Password salah!");
-        }
-
       } catch (err) {
-        console.error("Login Error:", err);
-        showLoginError("Gangguan koneksi ke server.");
+        console.error("Fetch Telegram Photo Error:", err);
+        return { ok: false };
       }
-    });
-
-    function showLoginError(msg) {
-      loginAlert.innerText = msg;
-      loginAlert.classList.remove('hidden');
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const savedUser = sessionStorage.getItem('hd_user');
-      if (savedUser) {
-        activeUser = JSON.parse(savedUser);
-        initDashboard();
-      }
-      listenToDiskusiAutoReopen();
+    // LISTENER FIREBASE UTAMA
+    onValue(ref(db, 'permintaan'), (snapshot) => {
+      globalPermintaanData = snapshot.val() || {};
+      renderTables(globalPermintaanData);
     });
 
-    btnLogout.addEventListener('click', () => {
-      sessionStorage.removeItem('hd_user');
-      activeUser = null;
-      dashboardSection.classList.add('hidden');
-      loginSection.classList.remove('hidden');
-    });
+    listenToDiskusiAutoReopen();
 
-    // ==================== DASHBOARD INIT & RENDER ====================
-    function initDashboard() {
-      loginSection.classList.add('hidden');
-      dashboardSection.classList.remove('hidden');
-
-      userNamaDisplay.innerText = activeUser.nama;
-      userNikDisplay.innerText = `NIK: ${activeUser.nik}`;
-
-      const permintaanRef = ref(db, 'permintaan');
-      onValue(permintaanRef, (snapshot) => {
-        globalPermintaanData = snapshot.val() || {};
-        renderTables(globalPermintaanData);
-      });
-    }
-
+    // RENDER TABEL & MAPPING KOLOM FLEKSIBEL
     function renderTables(data) {
       tabelOpenBody.innerHTML = '';
       tabelMyBody.innerHTML = '';
@@ -545,18 +437,31 @@
       if (data) {
         Object.keys(data).forEach(key => {
           const item = data[key];
-          const tiketId = item.tiket_id || key;
 
-          // 1. OPEN
-          if (!item.id_telegram_hd && (!item.status || item.status === 'OPEN' || item.status === '')) {
+          const tiketId = item.tiket_id || item.id_tiket || item.no_tiket || key;
+          const namaTeknisi = item.nama_teknisi || item.username_teknisi || item.nama_user || item.teknisi || '-';
+          const segmen = item.segmen || item.segment || item.layanan || '-';
+          const pesan = item.pesan || item.pesan_masuk || item.keterangan || item.deskripsi || '-';
+          const status = (item.status || 'OPEN').toUpperCase();
+          
+          const waktuMasuk = item.timestamp_created || item.waktu_masuk || item.created_at || item.tanggal || '';
+          const waktuTaken = item.timestamp_taken || item.waktu_taken || item.taken_at || '-';
+          const waktuClose = item.timestamp_close || item.waktu_close || item.closed_at || '-';
+          
+          const hdUser = item.id_telegram_hd || item.hd_id || item.id_hd;
+          const namaHd = item.nama_hd || item.hd_nama || item.petugas_hd || '-';
+          const kategori = item.kategori_pekerjaan || item.kategori || '';
+
+          // 1. TIKET OPEN
+          if (!hdUser && (status === 'OPEN' || status === '')) {
             openCount++;
-            const rowOpen = `
+            tabelOpenBody.insertAdjacentHTML('beforeend', `
               <tr>
                 <td><code>${tiketId}</code></td>
-                <td class="small text-muted">${formatDate(item.timestamp_created)}</td>
-                <td class="fw-semibold">${item.nama_teknisi || item.username_teknisi || '-'}</td>
-                <td><span class="badge bg-secondary-subtle text-dark border">${item.segmen || '-'}</span></td>
-                <td>${truncateText(item.pesan, 30)}</td>
+                <td class="small text-muted">${formatDate(waktuMasuk)}</td>
+                <td class="fw-semibold">${namaTeknisi}</td>
+                <td><span class="badge bg-secondary-subtle text-dark border">${segmen}</span></td>
+                <td>${truncateText(pesan, 30)}</td>
                 <td><span class="badge-status badge-open">OPEN</span></td>
                 <td class="text-center">
                   <button class="btn btn-sm btn-outline-primary me-1 btn-diskusi" data-key="${key}">
@@ -567,25 +472,24 @@
                   </button>
                 </td>
               </tr>
-            `;
-            tabelOpenBody.insertAdjacentHTML('beforeend', rowOpen);
+            `);
           }
 
-          // 2. DIKERJAKAN (TIKET SAYA)
-          if (item.id_telegram_hd === activeUser.id_telegram && item.status === 'DIKERJAKAN') {
+          // 2. TIKET SAYA (DIKERJAKAN)
+          if (String(hdUser) === String(activeUser.id_telegram) && (status === 'DIKERJAKAN' || status === 'PROCESS' || status === 'PROGRESS')) {
             myCount++;
-            const selectedConfig = item.kategori_pekerjaan === '/config' ? 'selected' : '';
-            const selectedBukis = item.kategori_pekerjaan === '/bukis' ? 'selected' : '';
+            const selectedConfig = kategori === '/config' ? 'selected' : '';
+            const selectedBukis = kategori === '/bukis' ? 'selected' : '';
 
-            const rowMy = `
+            tabelMyBody.insertAdjacentHTML('beforeend', `
               <tr>
                 <td><code>${tiketId}</code></td>
-                <td class="small text-muted">${item.timestamp_taken || '-'}</td>
-                <td class="fw-semibold">${item.nama_teknisi || item.username_teknisi || '-'}</td>
-                <td>${truncateText(item.pesan, 30)}</td>
+                <td class="small text-muted">${waktuTaken}</td>
+                <td class="fw-semibold">${namaTeknisi}</td>
+                <td>${truncateText(pesan, 30)}</td>
                 <td>
                   <select class="form-select form-select-sm select-kategori border-primary-subtle" data-key="${key}">
-                    <option value="" ${!item.kategori_pekerjaan ? 'selected' : ''}>-- Pilih Kategori --</option>
+                    <option value="" ${!kategori ? 'selected' : ''}>-- Pilih Kategori --</option>
                     <option value="/config" ${selectedConfig}>/config</option>
                     <option value="/bukis" ${selectedBukis}>/bukis</option>
                   </select>
@@ -599,20 +503,19 @@
                   </button>
                 </td>
               </tr>
-            `;
-            tabelMyBody.insertAdjacentHTML('beforeend', rowMy);
+            `);
           }
 
-          // 3. CLOSED
-          if (item.status === 'CLOSED' || item.status === 'SELESAI') {
+          // 3. TIKET CLOSED
+          if (status === 'CLOSED' || status === 'SELESAI') {
             closedCount++;
-            const rowClosed = `
+            tabelClosedBody.insertAdjacentHTML('beforeend', `
               <tr>
                 <td><code>${tiketId}</code></td>
-                <td class="small text-muted">${item.timestamp_close || '-'}</td>
-                <td class="fw-semibold">${item.nama_teknisi || item.username_teknisi || '-'}</td>
-                <td>${item.nama_hd || '-'}</td>
-                <td><span class="badge bg-light text-dark border">${item.kategori_pekerjaan || '-'}</span></td>
+                <td class="small text-muted">${waktuClose}</td>
+                <td class="fw-semibold">${namaTeknisi}</td>
+                <td>${namaHd}</td>
+                <td><span class="badge bg-light text-dark border">${kategori || '-'}</span></td>
                 <td><span class="badge-status badge-closed">CLOSED</span></td>
                 <td class="text-center">
                   <button class="btn btn-sm btn-outline-primary btn-diskusi" data-key="${key}">
@@ -620,8 +523,7 @@
                   </button>
                 </td>
               </tr>
-            `;
-            tabelClosedBody.insertAdjacentHTML('beforeend', rowClosed);
+            `);
           }
         });
       }
@@ -630,46 +532,48 @@
       countMy.innerText = myCount;
       countClosed.innerText = closedCount;
 
-      if (openCount === 0) tabelOpenBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Semua tiket telah ditaken!</td></tr>`;
-      if (myCount === 0) tabelMyBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Tidak ada tiket aktif.</td></tr>`;
-      if (closedCount === 0) tabelClosedBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada riwayat tiket closed.</td></tr>`;
+      if (openCount === 0) tabelOpenBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada tiket masuk.</td></tr>`;
+      if (myCount === 0) tabelMyBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Tidak ada tiket aktif yang Anda kerjakan.</td></tr>`;
+      if (closedCount === 0) tabelClosedBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada tiket selesai.</td></tr>`;
 
       attachTableEvents();
+      renderDashboardAnalytics();
     }
 
     function attachTableEvents() {
-      // EVENT: TAKE ORDER (Point 1)
+      // TAKE ORDER
       document.querySelectorAll('.btn-take').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
+        btn.onclick = async (e) => {
           const key = e.currentTarget.getAttribute('data-key');
           const item = globalPermintaanData[key];
           const timestampTaken = new Date().toLocaleString('id-ID');
 
-          const updateData = {
-            id_telegram_hd: activeUser.id_telegram,
-            nama_hd: activeUser.nama,
-            nik_hd: activeUser.nik,
-            status: 'DIKERJAKAN',
-            timestamp_taken: timestampTaken
-          };
-
           try {
-            await update(ref(db, `permintaan/${key}`), updateData);
-
-            // Telegram Reply
-            const targetChatId = item.chat_id || item.id_telegram_teknisi;
+            const targetChatId = item.chat_id || item.id_telegram_teknisi || item.id_telegram;
             const targetMessageId = item.message_id;
 
-            if (targetChatId && targetMessageId) {
+            if (targetChatId) {
               const pesanReply = `<b>[INFORMASI TIKET TAKEN]</b>\n\n` +
-                                 `Tiket <code>${item.tiket_id || key}</code> sedang dikerjakan oleh HD:\n` +
+                                 `Tiket <code>${item.tiket_id || item.id_tiket || key}</code> sedang diproses oleh HD:\n` +
                                  `<b>${activeUser.nama}</b> (NIK: ${activeUser.nik})`;
 
               const resTG = await sendTelegramReply(targetChatId, targetMessageId, pesanReply);
+              
+              if (!resTG || !resTG.ok) {
+                alert(`⚠️ Gagal mengirim notifikasi ke Telegram! ${resTG?.description || ''}`);
+                return;
+              }
 
-              // Simpan histori ke tabel diskusi
+              await update(ref(db, `permintaan/${key}`), {
+                id_telegram_hd: activeUser.id_telegram,
+                nama_hd: activeUser.nama,
+                nik_hd: activeUser.nik,
+                status: 'DIKERJAKAN',
+                timestamp_taken: timestampTaken
+              });
+
               push(ref(db, 'diskusi'), {
-                id_tiket: item.tiket_id || key,
+                id_tiket: item.tiket_id || item.id_tiket || key,
                 id_telegram: activeUser.id_telegram,
                 chat_id: targetChatId,
                 message_id: resTG?.result?.message_id || "",
@@ -679,49 +583,51 @@
               });
             }
 
-            const myTabBtn = document.getElementById('tab-my-btn');
-            bootstrap.Tab.getOrCreateInstance(myTabBtn).show();
+            bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-my-btn')).show();
           } catch (error) {
-            console.error('Gagal Take Order:', error);
+            console.error('Error Take Order:', error);
             alert('Gagal mengambil tiket!');
           }
-        });
+        };
       });
 
-      // EVENT: CLOSE TICKET (Point 2)
+      // CLOSE TICKET
       document.querySelectorAll('.btn-close-ticket').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
+        btn.onclick = async (e) => {
           const key = e.currentTarget.getAttribute('data-key');
           const item = globalPermintaanData[key];
+          const kategori = item.kategori_pekerjaan || item.kategori;
 
-          if (!item.kategori_pekerjaan) {
+          if (!kategori) {
             alert('Harap pilih Kategori Pekerjaan terlebih dahulu!');
             return;
           }
 
-          if (confirm(`Selesaikan tiket ${item.tiket_id || key}?`)) {
+          if (confirm(`Selesaikan tiket ${item.tiket_id || item.id_tiket || key}?`)) {
             const timestampClose = new Date().toLocaleString('id-ID');
 
             try {
-              await update(ref(db, `permintaan/${key}`), {
-                status: 'CLOSED',
-                timestamp_close: timestampClose
-              });
-
-              // Telegram Reply Notif Close
-              const targetChatId = item.chat_id || item.id_telegram_teknisi;
+              const targetChatId = item.chat_id || item.id_telegram_teknisi || item.id_telegram;
               const targetMessageId = item.message_id;
 
-              if (targetChatId && targetMessageId) {
+              if (targetChatId) {
                 const pesanClose = `<b>[TIKET CLOSED]</b>\n\n` +
-                                   `Tiket <code>${item.tiket_id || key}</code> telah diselesaikan oleh HD <b>${activeUser.nama}</b>.\n` +
-                                   `Terima kasih!`;
+                                   `Tiket <code>${item.tiket_id || item.id_tiket || key}</code> telah diselesaikan oleh HD <b>${activeUser.nama}</b>.`;
 
                 const resTG = await sendTelegramReply(targetChatId, targetMessageId, pesanClose);
 
-                // Simpan histori ke tabel diskusi
+                if (!resTG || !resTG.ok) {
+                  alert(`⚠️ Gagal mengirim notifikasi ke Telegram! ${resTG?.description || ''}`);
+                  return;
+                }
+
+                await update(ref(db, `permintaan/${key}`), {
+                  status: 'CLOSED',
+                  timestamp_close: timestampClose
+                });
+
                 push(ref(db, 'diskusi'), {
-                  id_tiket: item.tiket_id || key,
+                  id_tiket: item.tiket_id || item.id_tiket || key,
                   id_telegram: activeUser.id_telegram,
                   chat_id: targetChatId,
                   message_id: resTG?.result?.message_id || "",
@@ -731,52 +637,51 @@
                 });
               }
 
-              const closedTabBtn = document.getElementById('tab-closed-btn');
-              bootstrap.Tab.getOrCreateInstance(closedTabBtn).show();
+              bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-closed-btn')).show();
             } catch (error) {
-              console.error('Gagal Close Ticket:', error);
+              console.error('Error Close Ticket:', error);
               alert('Gagal menyelesaikan tiket!');
             }
           }
-        });
+        };
       });
 
-      // EVENT: BUKA MODAL DISKUSI (Point 3)
+      // OPEN MODAL DISKUSI
       document.querySelectorAll('.btn-diskusi').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.onclick = (e) => {
           activeDiskusiTiketKey = e.currentTarget.getAttribute('data-key');
           const item = globalPermintaanData[activeDiskusiTiketKey];
+          const tId = item.tiket_id || item.id_tiket || activeDiskusiTiketKey;
           
-          document.getElementById('diskusiTiketIdHeader').innerText = item.tiket_id || activeDiskusiTiketKey;
+          document.getElementById('diskusiTiketIdHeader').innerText = tId;
           resetDiskusiForm();
           modalDiskusi.show();
-          listenToDiskusiChat(item.tiket_id || activeDiskusiTiketKey);
-        });
+          listenToDiskusiChat(tId);
+        };
       });
 
-      // EVENT: UPDATE KATEGORI PEKERJAAN
+      // UPDATE KATEGORI
       document.querySelectorAll('.select-kategori').forEach(select => {
-        select.addEventListener('change', async (e) => {
+        select.onchange = async (e) => {
           const key = e.currentTarget.getAttribute('data-key');
           const value = e.target.value;
           try {
             await update(ref(db, `permintaan/${key}`), { kategori_pekerjaan: value });
           } catch (error) {
-            console.error('Gagal update kategori:', error);
+            console.error('Error update kategori:', error);
           }
-        });
+        };
       });
     }
 
-    // ==================== FEATURE 3: DISKUSI / CHAT LOGIC ====================
+    // DISKUSI CHAT & VALIDASI TELEGRAM
     function listenToDiskusiChat(tiketId) {
-      const diskusiRef = ref(db, 'diskusi');
-      onValue(diskusiRef, (snapshot) => {
+      onValue(ref(db, 'diskusi'), (snapshot) => {
         const data = snapshot.val();
         chatContainer.innerHTML = '';
 
         if (!data) {
-          chatContainer.innerHTML = `<div class="text-center text-muted small py-3">Belum ada diskusi untuk tiket ini.</div>`;
+          chatContainer.innerHTML = `<div class="text-center text-muted small py-3">Belum ada percakapan.</div>`;
           return;
         }
 
@@ -786,7 +691,7 @@
           const chat = data[key];
           if (chat.id_tiket === tiketId) {
             chatFound = true;
-            const isMe = chat.id_telegram === activeUser.id_telegram;
+            const isMe = String(chat.id_telegram) === String(activeUser.id_telegram);
             const bubbleClass = isMe ? 'chat-bubble-me' : 'chat-bubble-them';
 
             let imgElement = '';
@@ -796,42 +701,38 @@
               imgElement = `<br><small class="opacity-75">[Gambar/File ID: ${chat.id_file}]</small>`;
             }
 
-            const html = `
+            chatContainer.insertAdjacentHTML('beforeend', `
               <div class="chat-bubble ${bubbleClass}">
                 <div class="fw-bold opacity-75" style="font-size: 0.75rem;">${isMe ? 'Anda (HD)' : 'Teknisi/User'}</div>
                 <div>${chat.teks || ''}</div>
                 ${imgElement}
                 <div class="text-end opacity-50 mt-1" style="font-size: 0.65rem;">${chat.timestamp || ''}</div>
               </div>
-            `;
-            chatContainer.insertAdjacentHTML('beforeend', html);
+            `);
           }
         });
 
         if (!chatFound) {
-          chatContainer.innerHTML = `<div class="text-center text-muted small py-3">Belum ada diskusi untuk tiket ini.</div>`;
+          chatContainer.innerHTML = `<div class="text-center text-muted small py-3">Belum ada percakapan.</div>`;
         }
 
         chatContainer.scrollTop = chatContainer.scrollHeight;
       });
     }
 
-    // HANDLER PASTE / BROWSE FOTO
+    // ATTACHMENT & PASTE
     dropZone.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', (e) => {
-      if (e.target.files && e.target.files[0]) {
-        handleImageFile(e.target.files[0]);
-      }
+      if (e.target.files && e.target.files[0]) handleImageFile(e.target.files[0]);
     });
 
-    // Paste Langsung (Ctrl + V)
     document.addEventListener('paste', (e) => {
-      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      const items = (e.clipboardData || e.originalEvent.clipboardData)?.items;
+      if (!items) return;
       for (let item of items) {
         if (item.type.indexOf('image') !== -1) {
-          const blob = item.getAsFile();
-          handleImageFile(blob);
+          handleImageFile(item.getAsFile());
         }
       }
     });
@@ -846,9 +747,7 @@
       reader.readAsDataURL(file);
     }
 
-    btnRemoveImage.addEventListener('click', () => {
-      resetImageSelection();
-    });
+    btnRemoveImage.addEventListener('click', () => resetImageSelection());
 
     function resetImageSelection() {
       selectedImageFile = null;
@@ -862,7 +761,7 @@
       resetImageSelection();
     }
 
-    // FORM SUBMIT DISKUSI
+    // FORM SUBMIT DENGAN NOTIFIKASI TELEGRAM DIJAMIN MASUK
     formKirimDiskusi.addEventListener('submit', async (e) => {
       e.preventDefault();
       const pesan = teksBalasan.value.trim();
@@ -873,28 +772,42 @@
       }
 
       const item = globalPermintaanData[activeDiskusiTiketKey];
-      const targetChatId = item.chat_id || item.id_telegram_teknisi;
+      const targetChatId = item.chat_id || item.id_telegram_teknisi || item.id_telegram;
       const targetMessageId = item.message_id;
       const timestampNow = new Date().toLocaleString('id-ID');
+
+      if (!targetChatId) {
+        alert('⚠️ Error: ID Telegram/Chat ID tujuan tidak ditemukan pada data tiket!');
+        return;
+      }
 
       let telegramRes = null;
       let base64ImageStr = "";
 
-      // Convert image to Base64 (untuk simpan di database)
       if (selectedImageFile) {
         base64ImageStr = await convertFileToBase64(selectedImageFile);
       }
 
-      // 1. Kirim ke Telegram
-      if (selectedImageFile) {
-        telegramRes = await sendTelegramPhoto(targetChatId, targetMessageId, selectedImageFile, pesan);
-      } else if (pesan) {
-        telegramRes = await sendTelegramReply(targetChatId, targetMessageId, pesan);
+      try {
+        if (selectedImageFile) {
+          telegramRes = await sendTelegramPhoto(targetChatId, targetMessageId, selectedImageFile, pesan);
+        } else if (pesan) {
+          telegramRes = await sendTelegramReply(targetChatId, targetMessageId, pesan);
+        }
+
+        if (!telegramRes || !telegramRes.ok) {
+          alert(`⚠️ GAGAL TELEGRAM: Balasan gagal dikirim! Detail: ${telegramRes?.description || 'Koneksi terputus'}`);
+          return;
+        }
+      } catch (err) {
+        console.error("API Telegram error:", err);
+        alert('⚠️ GAGAL KONEKSI: Terjadi kesalahan saat mengirim ke Telegram!');
+        return;
       }
 
-      // 2. Simpan ke Tabel Diskusi Firebase
+      // Simpan ke DB hanya jika Telegram berhasil
       const payloadDiskusi = {
-        id_tiket: item.tiket_id || activeDiskusiTiketKey,
+        id_tiket: item.tiket_id || item.id_tiket || activeDiskusiTiketKey,
         id_telegram: activeUser.id_telegram,
         chat_id: targetChatId,
         message_id: telegramRes?.result?.message_id || "",
@@ -907,12 +820,11 @@
         await push(ref(db, 'diskusi'), payloadDiskusi);
         resetDiskusiForm();
       } catch (err) {
-        console.error('Gagal simpan diskusi:', err);
-        alert('Gagal mengirim balasan!');
+        console.error('Error Simpan Diskusi ke DB:', err);
+        alert('Pesan terkirim ke Telegram tetapi gagal disimpan ke database.');
       }
     });
 
-    // Helper Convert File to Base64
     function convertFileToBase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -922,54 +834,226 @@
       });
     }
 
-    // ==================== LOGIKA AUTO RE-OPEN TIKET CLOSED ====================
+    // DASHBOARD ANALYTICS ENGINE
+    const filterPeriodeSelect = document.getElementById('filterPeriode');
+    const customDateContainer = document.getElementById('customDateContainer');
+
+    filterPeriodeSelect.addEventListener('change', (e) => {
+      if (e.target.value === 'custom') {
+        customDateContainer.classList.remove('d-none');
+      } else {
+        customDateContainer.classList.add('d-none');
+        renderDashboardAnalytics();
+      }
+    });
+
+    document.getElementById('btnApplyCustomDate').addEventListener('click', () => {
+      renderDashboardAnalytics();
+    });
+
+    function getDateRangeFilter() {
+      const mode = filterPeriodeSelect.value;
+      const now = new Date();
+      let start = new Date();
+      let end = new Date();
+
+      if (mode === 'today') {
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+      } else if (mode === 'week') {
+        const dayOfWeek = now.getDay();
+        const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+        start = new Date(now.setDate(diff));
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+      } else if (mode === 'month') {
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      } else if (mode === 'custom') {
+        const sVal = document.getElementById('startDate').value;
+        const eVal = document.getElementById('endDate').value;
+        if (sVal) start = new Date(sVal + 'T00:00:00');
+        if (eVal) end = new Date(eVal + 'T23:59:59');
+      }
+
+      return { start, end };
+    }
+
+    function renderDashboardAnalytics() {
+      if (!globalPermintaanData) return;
+
+      const { start, end } = getDateRangeFilter();
+      let openCount = 0;
+      let inProgressCount = 0;
+      let closedCount = 0;
+
+      const hdPerformanceMap = {};
+      const inProgressList = [];
+      let totalDurasiSolve = 0;
+
+      Object.keys(globalPermintaanData).forEach(key => {
+        const item = globalPermintaanData[key];
+        const status = (item.status || 'OPEN').toUpperCase();
+        const hdUser = item.id_telegram_hd || item.hd_id || item.id_hd;
+
+        const wClose = item.timestamp_close || item.waktu_close || item.closed_at;
+        const wCreate = item.timestamp_created || item.waktu_masuk || item.created_at;
+
+        const tClose = safeDateParse(wClose);
+        const tCreate = safeDateParse(wCreate);
+
+        if (!hdUser && (status === 'OPEN' || status === '')) {
+          openCount++;
+        }
+
+        if (status === 'DIKERJAKAN' || status === 'PROCESS' || status === 'PROGRESS') {
+          inProgressCount++;
+          inProgressList.push(item);
+        }
+
+        if ((status === 'CLOSED' || status === 'SELESAI') && tClose) {
+          if (tClose >= start && tClose <= end) {
+            closedCount++;
+
+            const hdNama = item.nama_hd || item.hd_nama || item.petugas_hd || 'Tanpa Nama';
+            const hdNik = item.nik_hd || item.hd_nik || '-';
+            const hdKey = hdNik !== '-' ? hdNik : hdNama;
+
+            if (!hdPerformanceMap[hdKey]) {
+              hdPerformanceMap[hdKey] = { nama: hdNama, nik: hdNik, total: 0 };
+            }
+            hdPerformanceMap[hdKey].total++;
+
+            if (tCreate) {
+              const diffMs = tClose - tCreate;
+              totalDurasiSolve += Math.max(0, diffMs / (1000 * 60));
+            }
+          }
+        }
+      });
+
+      document.getElementById('dashOpenCount').innerText = openCount;
+      document.getElementById('dashInProgressCount').innerText = inProgressCount;
+      document.getElementById('dashClosedCount').innerText = closedCount;
+      
+      const avgMinutes = closedCount > 0 ? Math.round(totalDurasiSolve / closedCount) : 0;
+      document.getElementById('dashAvgResponse').innerText = `${avgMinutes} mnt`;
+
+      const tbodyProgress = document.getElementById('tabelDashInProgress');
+      tbodyProgress.innerHTML = '';
+      if (inProgressList.length === 0) {
+        tbodyProgress.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">Tidak ada tiket sedang dikerjakan</td></tr>`;
+      } else {
+        inProgressList.forEach(i => {
+          const tId = i.tiket_id || i.id_tiket || '-';
+          const tNama = i.nama_teknisi || i.username_teknisi || '-';
+          const hNama = i.nama_hd || i.hd_nama || '-';
+          const wTaken = i.timestamp_taken || i.waktu_taken || '-';
+
+          tbodyProgress.insertAdjacentHTML('beforeend', `
+            <tr>
+              <td><code>${tId}</code></td>
+              <td>${tNama}</td>
+              <td><span class="badge bg-warning text-dark">${hNama}</span></td>
+              <td class="small">${wTaken}</td>
+            </tr>
+          `);
+        });
+      }
+
+      const tbodyHD = document.getElementById('tabelDashHDPerformance');
+      tbodyHD.innerHTML = '';
+      const hdList = Object.values(hdPerformanceMap);
+      if (hdList.length === 0) {
+        tbodyHD.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-3">Belum ada tiket closed pada periode ini</td></tr>`;
+      } else {
+        hdList.sort((a,b) => b.total - a.total).forEach(hd => {
+          tbodyHD.insertAdjacentHTML('beforeend', `
+            <tr>
+              <td class="fw-semibold">${hd.nama}</td>
+              <td><code>${hd.nik}</code></td>
+              <td><span class="badge bg-success fs-6">${hd.total} Tiket</span></td>
+            </tr>
+          `);
+        });
+      }
+    }
+
+    function safeDateParse(dateStr) {
+      if (!dateStr) return null;
+      try {
+        const d = new Date(dateStr);
+        if (!isNaN(d.getTime())) return d;
+
+        const parts = String(dateStr).split(',');
+        if (parts.length >= 1) {
+          const dateParts = parts[0].trim().split('/');
+          if (dateParts.length === 3) {
+            let timeParts = [0, 0, 0];
+            if (parts[1]) {
+              timeParts = parts[1].trim().replace(/\./g, ':').split(':');
+            }
+            return new Date(
+              parseInt(dateParts[2]), 
+              parseInt(dateParts[1]) - 1, 
+              parseInt(dateParts[0]),
+              parseInt(timeParts[0] || 0),
+              parseInt(timeParts[1] || 0),
+              parseInt(timeParts[2] || 0)
+            );
+          }
+        }
+        return null;
+      } catch (e) {
+        return null;
+      }
+    }
+
     function listenToDiskusiAutoReopen() {
-      const diskusiRef = ref(db, 'diskusi');
-      onValue(diskusiRef, (snapshot) => {
+      onValue(ref(db, 'diskusi'), (snapshot) => {
         const data = snapshot.val();
         if (!data || !globalPermintaanData) return;
 
+        const tiketMapByCustomId = {};
+        Object.keys(globalPermintaanData).forEach(key => {
+          const t = globalPermintaanData[key];
+          const customId = t.tiket_id || t.id_tiket || key;
+          tiketMapByCustomId[customId] = { firebaseKey: key, data: t };
+        });
+
         Object.keys(data).forEach(async (key) => {
           const diskusi = data[key];
-          
-          // Cari tiket terkait
-          Object.keys(globalPermintaanData).forEach(async (tiketKey) => {
-            const item = globalPermintaanData[tiketKey];
-            const tiketId = item.tiket_id || tiketKey;
+          const targetTiket = tiketMapByCustomId[diskusi.id_tiket];
 
-            if (diskusi.id_tiket === tiketId) {
-              // Jika pengirim BUKAN HD (Teknisi) dan status tiket CLOSED
-              if (diskusi.id_telegram !== item.id_telegram_hd && (item.status === 'CLOSED' || item.status === 'SELESAI')) {
-                try {
-                  await update(ref(db, `permintaan/${tiketKey}`), {
-                    status: 'OPEN',
-                    timestamp_close: ""
-                  });
-                  console.log(`Tiket ${tiketId} otomatis RE-OPEN karena balasan baru dari teknisi.`);
-                } catch (e) {
-                  console.error("Gagal auto reopen tiket:", e);
-                }
+          if (targetTiket) {
+            const { firebaseKey, data: item } = targetTiket;
+            const status = (item.status || '').toUpperCase();
+            const hdUser = item.id_telegram_hd || item.hd_id;
+
+            if (String(diskusi.id_telegram) !== String(hdUser) && (status === 'CLOSED' || status === 'SELESAI')) {
+              try {
+                await update(ref(db, `permintaan/${firebaseKey}`), {
+                  status: 'OPEN',
+                  timestamp_close: ""
+                });
+              } catch (e) {
+                console.error("Gagal auto reopen:", e);
               }
             }
-          });
+          }
         });
       });
     }
 
-    // Helper Utilities
     function truncateText(str, max) {
       if (!str) return '-';
       return str.length > max ? str.substring(0, max) + '...' : str;
     }
-co
+
     function formatDate(dateStr) {
       if (!dateStr) return '-';
-      try {
-        const d = new Date(dateStr);
-        return isNaN(d.getTime()) ? dateStr : d.toLocaleString('id-ID');
-      } catch (e) {
-        return dateStr;
-      }
+      const d = safeDateParse(dateStr);
+      return d ? d.toLocaleString('id-ID') : dateStr;
     }
   </script>
 </body>
