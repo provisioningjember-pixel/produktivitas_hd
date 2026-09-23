@@ -20,7 +20,7 @@
 
     .hidden { display: none !important; }
 
-    /* ================= LOGIN STYLES ================= */
+    /* Login Style */
     .login-wrapper {
       min-height: 100vh;
       background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
@@ -35,7 +35,7 @@
       background: #ffffff;
     }
 
-    /* ================= TOP NAVBAR & MENU ================= */
+    /* Top Navigation Tabs */
     .top-header {
       background: #1e293b;
       color: #ffffff;
@@ -68,7 +68,7 @@
       background: transparent;
     }
 
-    /* ================= CARDS & TABLES ================= */
+    /* Cards & Tables */
     .card-custom {
       border: 1px solid #e2e8f0;
       border-radius: 12px;
@@ -93,7 +93,6 @@
       border-color: #f1f5f9;
     }
 
-    /* Badges Modern */
     .badge-status {
       padding: 0.35em 0.75em;
       font-size: 0.75rem;
@@ -141,14 +140,13 @@
   <!-- ==================== SECTION 2: MAIN DASHBOARD ==================== -->
   <div id="dashboardSection" class="hidden">
     
-    <!-- TOP HEADER / NAVBAR -->
+    <!-- TOP HEADER -->
     <header class="top-header px-4 py-3 d-flex align-items-center justify-content-between">
       <div class="d-flex align-items-center">
         <i class="bi bi-cpu-fill text-primary fs-4 me-2"></i>
         <h5 class="fw-bold mb-0 text-white me-3">HD Workspace</h5>
       </div>
       
-      <!-- User Info & Logout -->
       <div class="d-flex align-items-center">
         <div class="text-end me-3 d-none d-sm-block">
           <div class="fw-semibold text-white small" id="userNamaDisplay">-</div>
@@ -160,7 +158,7 @@
       </div>
     </header>
 
-    <!-- TOP MENU TABS (TERLETAK DI ATAS) -->
+    <!-- TOP TAB MENUS -->
     <div class="nav-tabs-custom shadow-sm px-3">
       <ul class="nav nav-tabs border-0 container-fluid" id="topTab" role="tablist">
         <li class="nav-item" role="presentation">
@@ -184,7 +182,7 @@
       </ul>
     </div>
 
-    <!-- MAIN CONTENT AREA -->
+    <!-- CONTENT AREA -->
     <main class="container-fluid p-4">
       <div class="tab-content" id="topTabContent">
         
@@ -202,15 +200,16 @@
                     <tr>
                       <th>ID Tiket</th>
                       <th>Waktu Masuk</th>
-                      <th>Pelapor</th>
-                      <th>Uraian Permintaan</th>
+                      <th>Teknisi / Pelapor</th>
+                      <th>Segmen</th>
+                      <th>Pesan / Uraian</th>
                       <th>Status</th>
                       <th class="text-center">Aksi</th>
                     </tr>
                   </thead>
                   <tbody id="tabelOpenBody">
                     <tr>
-                      <td colspan="6" class="text-center py-4 text-muted">
+                      <td colspan="7" class="text-center py-4 text-muted">
                         <div class="spinner-border spinner-border-sm text-primary me-2"></div>
                         Mengkoneksikan ke antrean realtime...
                       </td>
@@ -235,8 +234,8 @@
                     <tr>
                       <th>ID Tiket</th>
                       <th>Waktu Taken</th>
-                      <th>Pelapor</th>
-                      <th>Uraian Permintaan</th>
+                      <th>Teknisi</th>
+                      <th>Pesan / Uraian</th>
                       <th>Kategori Pekerjaan</th>
                       <th class="text-center">Aksi</th>
                     </tr>
@@ -256,7 +255,7 @@
         <div class="tab-pane fade" id="tab-closed" role="tabpanel">
           <div class="card card-custom">
             <div class="card-header bg-transparent border-0 pt-3 px-3">
-              <h6 class="fw-bold mb-0 text-dark"><i class="bi-check-all text-success me-2"></i>Riwayat Tiket Closed / Selesai</h6>
+              <h6 class="fw-bold mb-0 text-dark"><i class="bi-check-all text-success me-2"></i>Riwayat Tiket Closed</h6>
             </div>
             <div class="card-body p-0">
               <div class="table-responsive">
@@ -265,7 +264,7 @@
                     <tr>
                       <th>ID Tiket</th>
                       <th>Waktu Closed</th>
-                      <th>Pelapor</th>
+                      <th>Teknisi</th>
                       <th>Petugas HD</th>
                       <th>Kategori</th>
                       <th>Status</th>
@@ -274,7 +273,7 @@
                   </thead>
                   <tbody id="tabelClosedBody">
                     <tr>
-                      <td colspan="7" class="text-center py-4 text-muted">Belum ada riwayat tiket yang closed.</td>
+                      <td colspan="7" class="text-center py-4 text-muted">Belum ada riwayat tiket closed.</td>
                     </tr>
                   </tbody>
                 </table>
@@ -287,12 +286,12 @@
     </main>
   </div>
 
-  <!-- ==================== MODAL DETAIL TIKET ==================== -->
+  <!-- ==================== MODAL DETAIL TIKET LENGKAP ==================== -->
   <div class="modal fade" id="modalDetail" tabindex="-1" aria-labelledby="modalDetailLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
         <div class="modal-header bg-dark text-white fw-semibold">
-          <h5 class="modal-title fs-6" id="modalDetailLabel"><i class="bi-info-circle text-primary me-2"></i>Rincian Tiket Permintaan</h5>
+          <h5 class="modal-title fs-6" id="modalDetailLabel"><i class="bi-info-circle text-primary me-2"></i>Detail Lengkap Tiket</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body p-4">
@@ -306,39 +305,55 @@
               <div id="detailStatusBadge">-</div>
             </div>
             <hr class="my-2 opacity-25">
-            <div class="col-md-6">
-              <label class="form-label text-muted small mb-0">Nama Pelapor</label>
-              <div class="fw-semibold text-dark" id="detailPelapor">-</div>
+            <div class="col-md-4">
+              <label class="form-label text-muted small mb-0">Nama Teknisi</label>
+              <div class="fw-semibold text-dark" id="detailNamaTeknisi">-</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label text-muted small mb-0">Username Telegram</label>
+              <div class="fw-semibold text-dark" id="detailUsernameTeknisi">-</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label text-muted small mb-0">ID Telegram Teknisi</label>
+              <div class="fw-semibold text-dark" id="detailIdTelegramTeknisi">-</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label text-muted small mb-0">ID Telegram Pelapor</label>
-              <div class="fw-semibold text-dark" id="detailIdTelegramPelapor">-</div>
+              <label class="form-label text-muted small mb-0">Segmen</label>
+              <div class="fw-semibold text-dark" id="detailSegmen">-</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-muted small mb-0">Kategori Pekerjaan</label>
+              <div class="fw-semibold text-dark" id="detailKategori">-</div>
             </div>
             <div class="col-md-12">
-              <label class="form-label text-muted small mb-0">Uraian Permintaan</label>
-              <div class="p-3 bg-light rounded-3 border text-break text-dark small" id="detailUraian">-</div>
+              <label class="form-label text-muted small mb-0">Pesan / Uraian Permintaan</label>
+              <div class="p-3 bg-light rounded-3 border text-break text-dark small fw-semibold" id="detailPesan">-</div>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label text-muted small mb-0">Keterangan Tambahan</label>
+              <div class="p-2 bg-light rounded-3 border text-break text-muted small" id="detailKeterangan">-</div>
             </div>
             <hr class="my-2 opacity-25">
             <div class="col-md-4">
-              <label class="form-label text-muted small mb-0">Waktu Open</label>
-              <div class="small fw-semibold text-dark" id="detailTimeOpen">-</div>
+              <label class="form-label text-muted small mb-0">Waktu Created</label>
+              <div class="small fw-semibold text-dark" id="detailTimeCreated">-</div>
             </div>
             <div class="col-md-4">
               <label class="form-label text-muted small mb-0">Waktu Taken</label>
               <div class="small fw-semibold text-dark" id="detailTimeTaken">-</div>
             </div>
             <div class="col-md-4">
-              <label class="form-label text-muted small mb-0">Waktu Closed</label>
-              <div class="small fw-semibold text-dark" id="detailTimeClosed">-</div>
+              <label class="form-label text-muted small mb-0">Waktu Close</label>
+              <div class="small fw-semibold text-dark" id="detailTimeClose">-</div>
             </div>
             <hr class="my-2 opacity-25">
             <div class="col-md-6">
-              <label class="form-label text-muted small mb-0">Petugas HD Penanggung Jawab</label>
+              <label class="form-label text-muted small mb-0">Petugas HD</label>
               <div class="fw-semibold text-dark" id="detailNamaHD">-</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label text-muted small mb-0">Kategori Pekerjaan</label>
-              <div class="fw-semibold text-dark" id="detailKategori">-</div>
+              <label class="form-label text-muted small mb-0">NIK HD</label>
+              <div class="fw-semibold text-dark" id="detailNikHD">-</div>
             </div>
           </div>
         </div>
@@ -357,7 +372,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // 1. Firebase Config
+    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyCIEJHWd7EBzC0FeWgtlmNF0CHpPcyCrK4",
       authDomain: "forminput-9c324.firebaseapp.com",
@@ -393,7 +408,7 @@
     const modalDetailElement = document.getElementById('modalDetail');
     const modalDetail = new bootstrap.Modal(modalDetailElement);
 
-    // 2. OTENTIKASI USER LOGIN
+    // LOGIN
     formLogin.addEventListener('submit', async (e) => {
       e.preventDefault();
       loginAlert.classList.add('hidden');
@@ -404,7 +419,7 @@
       try {
         const usersSnapshot = await get(ref(db, 'users_hd'));
         if (!usersSnapshot.exists()) {
-          showLoginError("Data pengguna HD tidak ditemukan di sistem!");
+          showLoginError("Data pengguna HD tidak ditemukan!");
           return;
         }
 
@@ -457,7 +472,7 @@
       loginSection.classList.remove('hidden');
     });
 
-    // 3. INIT DASHBOARD & LISTENER
+    // INIT DASHBOARD
     function initDashboard() {
       loginSection.classList.add('hidden');
       dashboardSection.classList.remove('hidden');
@@ -472,14 +487,14 @@
       });
     }
 
-    // 4. RENDER TABEL REALTIME
+    // RENDER TABLES ACCORDING TO SKEMA FIREBASE
     function renderTables(data) {
       tabelOpenBody.innerHTML = '';
       tabelMyBody.innerHTML = '';
       tabelClosedBody.innerHTML = '';
 
       if (!data) {
-        tabelOpenBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Tidak ada tiket.</td></tr>`;
+        tabelOpenBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Tidak ada tiket.</td></tr>`;
         tabelMyBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Belum ada tiket ditaken.</td></tr>`;
         tabelClosedBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada riwayat tiket closed.</td></tr>`;
         countOpen.innerText = '0';
@@ -494,16 +509,18 @@
 
       Object.keys(data).forEach(key => {
         const item = data[key];
+        const tiketId = item.tiket_id || key;
 
-        // 1. TAB TIKET OPEN
-        if (!item.id_telegram_hd && (item.status === 'OPEN' || !item.status)) {
+        // 1. TAB OPEN
+        if (!item.id_telegram_hd && (!item.status || item.status === 'OPEN' || item.status === '')) {
           openCount++;
           const rowOpen = `
             <tr>
-              <td><code>${key}</code></td>
-              <td class="small text-muted">${item.timestamp || '-'}</td>
-              <td class="fw-semibold">${item.nama_pelapor || item.id_telegram || '-'}</td>
-              <td>${truncateText(item.uraian_permintaan, 30)}</td>
+              <td><code>${tiketId}</code></td>
+              <td class="small text-muted">${formatDate(item.timestamp_created)}</td>
+              <td class="fw-semibold">${item.nama_teknisi || item.username_teknisi || '-'}</td>
+              <td><span class="badge bg-secondary-subtle text-dark border">${item.segmen || '-'}</span></td>
+              <td>${truncateText(item.pesan, 30)}</td>
               <td><span class="badge-status badge-open">OPEN</span></td>
               <td class="text-center">
                 <button class="btn btn-sm btn-light border text-dark me-1 btn-detail" data-key="${key}">
@@ -526,10 +543,10 @@
 
           const rowMy = `
             <tr>
-              <td><code>${key}</code></td>
+              <td><code>${tiketId}</code></td>
               <td class="small text-muted">${item.timestamp_taken || '-'}</td>
-              <td class="fw-semibold">${item.nama_pelapor || item.id_telegram || '-'}</td>
-              <td>${truncateText(item.uraian_permintaan, 30)}</td>
+              <td class="fw-semibold">${item.nama_teknisi || item.username_teknisi || '-'}</td>
+              <td>${truncateText(item.pesan, 30)}</td>
               <td>
                 <select class="form-select form-select-sm select-kategori border-primary-subtle" data-key="${key}">
                   <option value="" ${!item.kategori_pekerjaan ? 'selected' : ''}>-- Pilih Kategori --</option>
@@ -550,14 +567,14 @@
           tabelMyBody.insertAdjacentHTML('beforeend', rowMy);
         }
 
-        // 3. TAB TIKET CLOSED
+        // 3. TAB CLOSED
         if (item.status === 'CLOSED' || item.status === 'SELESAI') {
           closedCount++;
           const rowClosed = `
             <tr>
-              <td><code>${key}</code></td>
-              <td class="small text-muted">${item.timestamp_closed || '-'}</td>
-              <td class="fw-semibold">${item.nama_pelapor || item.id_telegram || '-'}</td>
+              <td><code>${tiketId}</code></td>
+              <td class="small text-muted">${item.timestamp_close || '-'}</td>
+              <td class="fw-semibold">${item.nama_teknisi || item.username_teknisi || '-'}</td>
               <td>${item.nama_hd || '-'}</td>
               <td><span class="badge bg-light text-dark border">${item.kategori_pekerjaan || '-'}</span></td>
               <td><span class="badge-status badge-closed">CLOSED</span></td>
@@ -576,15 +593,9 @@
       countMy.innerText = myCount;
       countClosed.innerText = closedCount;
 
-      if (openCount === 0) {
-        tabelOpenBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Semua tiket telah ditaken!</td></tr>`;
-      }
-      if (myCount === 0) {
-        tabelMyBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Tidak ada tiket aktif.</td></tr>`;
-      }
-      if (closedCount === 0) {
-        tabelClosedBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada riwayat tiket yang closed.</td></tr>`;
-      }
+      if (openCount === 0) tabelOpenBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Semua tiket telah ditaken!</td></tr>`;
+      if (myCount === 0) tabelMyBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Tidak ada tiket aktif.</td></tr>`;
+      if (closedCount === 0) tabelClosedBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada riwayat tiket closed.</td></tr>`;
 
       attachTableEvents();
     }
@@ -594,36 +605,52 @@
       return str.length > max ? str.substring(0, max) + '...' : str;
     }
 
-    // 5. EVENT LISTENERS
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      try {
+        const d = new Date(dateStr);
+        return isNaN(d.getTime()) ? dateStr : d.toLocaleString('id-ID');
+      } catch (e) {
+        return dateStr;
+      }
+    }
+
+    // ATTACH EVENT LISTENERS
     function attachTableEvents() {
+      // Detail Ticket
       document.querySelectorAll('.btn-detail').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const key = e.currentTarget.getAttribute('data-key');
           const item = globalPermintaanData[key];
 
           if (item) {
-            document.getElementById('detailIdTiket').innerText = key;
+            document.getElementById('detailIdTiket').innerText = item.tiket_id || key;
             
             let badgeHtml = '<span class="badge bg-secondary">UNKNOWN</span>';
-            if (item.status === 'OPEN' || !item.status) badgeHtml = '<span class="badge-status badge-open">OPEN</span>';
+            if (!item.status || item.status === 'OPEN') badgeHtml = '<span class="badge-status badge-open">OPEN</span>';
             else if (item.status === 'DIKERJAKAN') badgeHtml = '<span class="badge-status badge-dikerjakan">DIKERJAKAN</span>';
             else if (item.status === 'CLOSED' || item.status === 'SELESAI') badgeHtml = '<span class="badge-status badge-closed">CLOSED</span>';
             
             document.getElementById('detailStatusBadge').innerHTML = badgeHtml;
-            document.getElementById('detailPelapor').innerText = item.nama_pelapor || '-';
-            document.getElementById('detailIdTelegramPelapor').innerText = item.id_telegram || '-';
-            document.getElementById('detailUraian').innerText = item.uraian_permintaan || '-';
-            document.getElementById('detailTimeOpen').innerText = item.timestamp || '-';
-            document.getElementById('detailTimeTaken').innerText = item.timestamp_taken || '-';
-            document.getElementById('detailTimeClosed').innerText = item.timestamp_closed || '-';
-            document.getElementById('detailNamaHD').innerText = item.nama_hd ? `${item.nama_hd} (${item.nik_hd || '-'})` : '-';
+            document.getElementById('detailNamaTeknisi').innerText = item.nama_teknisi || '-';
+            document.getElementById('detailUsernameTeknisi').innerText = item.username_teknisi || '-';
+            document.getElementById('detailIdTelegramTeknisi').innerText = item.id_telegram_teknisi || item.chat_id || '-';
+            document.getElementById('detailSegmen').innerText = item.segmen || '-';
             document.getElementById('detailKategori').innerText = item.kategori_pekerjaan || '-';
+            document.getElementById('detailPesan').innerText = item.pesan || '-';
+            document.getElementById('detailKeterangan').innerText = item.keterangan || '-';
+            document.getElementById('detailTimeCreated').innerText = formatDate(item.timestamp_created);
+            document.getElementById('detailTimeTaken').innerText = item.timestamp_taken || '-';
+            document.getElementById('detailTimeClose').innerText = item.timestamp_close || '-';
+            document.getElementById('detailNamaHD').innerText = item.nama_hd || '-';
+            document.getElementById('detailNikHD').innerText = item.nik_hd || '-';
 
             modalDetail.show();
           }
         });
       });
 
+      // Take Order
       document.querySelectorAll('.btn-take').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           const key = e.currentTarget.getAttribute('data-key');
@@ -648,6 +675,7 @@
         });
       });
 
+      // Close Ticket (Mengisi timestamp_close)
       document.querySelectorAll('.btn-close-ticket').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           const key = e.currentTarget.getAttribute('data-key');
@@ -658,17 +686,16 @@
             return;
           }
 
-          if (confirm(`Selesaikan tiket ${key}?`)) {
-            const timestampClosed = new Date().toLocaleString('id-ID');
+          if (confirm(`Selesaikan tiket ${item.tiket_id || key}?`)) {
+            const timestampClose = new Date().toLocaleString('id-ID');
 
             try {
               await update(ref(db, `permintaan/${key}`), {
                 status: 'CLOSED',
-                timestamp_closed: timestampClosed
+                timestamp_close: timestampClose
               });
               alert('Tiket diselesaikan!');
               
-              // Pindah otomatis ke Tab Tiket Closed
               const closedTabBtn = document.getElementById('tab-closed-btn');
               bootstrap.Tab.getOrCreateInstance(closedTabBtn).show();
             } catch (error) {
@@ -679,6 +706,7 @@
         });
       });
 
+      // Update Kategori Pekerjaan
       document.querySelectorAll('.select-kategori').forEach(select => {
         select.addEventListener('change', async (e) => {
           const key = e.currentTarget.getAttribute('data-key');
