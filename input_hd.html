@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manajemen User Helpdesk (HD)</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+  <div class="container py-5">
+    <div class="row mb-4">
+      <div class="col">
+        <h2 class="fw-bold"><i class="bi-people-fill text-primary me-2"></i>Manajemen User Helpdesk (HD)</h2>
+        <p class="text-muted">Kelola akun dan hak akses Helpdesk untuk relasi tiket Telegram.</p>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- FORM TAMBAH USER -->
+      <div class="col-lg-4">
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-primary text-white fw-semibold">
+            <i class="bi-person-plus-fill me-1"></i> Tambah User HD Baru
+          </div>
+          <div class="card-body">
+            <form id="formUserHD">
+              <div class="mb-3">
+                <label for="idTelegram" class="form-label">ID Telegram <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="idTelegram" placeholder="Contoh: 123456789" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="username" class="form-label">Username Telegram</label>
+                <div class="input-group">
+                  <span class="input-group-text">@</span>
+                  <input type="text" class="form-control" id="username" placeholder="username_hd">
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="nik" class="form-label">NIK <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="nik" placeholder="Masukkan NIK Karyawan" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="nama" class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="nama" placeholder="Masukkan Nama Lengkap" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                <input type="password" class="form-control" id="password" placeholder="••••••••" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                <select class="form-select" id="status" required>
+                  <option value="AKTIF" selected>AKTIF</option>
+                  <option value="NONAKTIF">NONAKTIF</option>
+                </select>
+              </div>
+
+              <button type="submit" class="btn btn-primary w-100" id="btnSimpan">
+                <i class="bi-save me-1"></i> Simpan User HD
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABEL LIST USER -->
+      <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-white fw-semibold py-3">
+            <i class="bi-list-ul me-1"></i> Daftar User Helpdesk
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>ID Telegram</th>
+                    <th>Nama</th>
+                    <th>Username</th>
+                    <th>NIK</th>
+                    <th>Status</th>
+                    <th class="text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelBodyHD">
+                  <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">
+                      <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                      Memuat data...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Modular SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // 1. Konfigurasi Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCIEJHWd7EBzC0FeWgtlmNF0CHpPcyCrK4",
+      authDomain: "forminput-9c324.firebaseapp.com",
+      projectId: "forminput-9c324",
+      storageBucket: "forminput-9c324.firebasestorage.app",
+      messagingSenderId: "105974451173",
+      appId: "1:105974451173:web:d2976fc5ed60dad0d23d0c",
+      databaseURL: "https://forminput-9c324-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+
+    // Inisialisasi Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const formUserHD = document.getElementById('formUserHD');
+    const tabelBodyHD = document.getElementById('tabelBodyHD');
+
+    // 2. SIMPAN DATA USER HD KE FIREBASE (Node path: `users_hd/{id_telegram}`)
+    formUserHD.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const idTelegram = document.getElementById('idTelegram').value.trim();
+      let username = document.getElementById('username').value.trim();
+      if (username && !username.startsWith('@')) {
+        username = '@' + username;
+      }
+
+      const payloadHD = {
+        id_telegram: idTelegram,
+        username: username,
+        nik: document.getElementById('nik').value.trim(),
+        nama: document.getElementById('nama').value.trim(),
+        password: document.getElementById('password').value,
+        status: document.getElementById('status').value
+      };
+
+      try {
+        // Simpan data berdasarkan ID Telegram sebagai Primary Key
+        await set(ref(db, `users_hd/${idTelegram}`), payloadHD);
+        alert('User HD Berhasil Didaftarkan!');
+        formUserHD.reset();
+      } catch (error) {
+        console.error('Error saving data:', error);
+        alert('Gagal menyimpan data!');
+      }
+    });
+
+    // 3. READ REALTIME DATA USER HD
+    const usersHdRef = ref(db, 'users_hd');
+    onValue(usersHdRef, (snapshot) => {
+      tabelBodyHD.innerHTML = '';
+      const data = snapshot.val();
+
+      if (!data) {
+        tabelBodyHD.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center py-4 text-muted">Belum ada data User HD.</td>
+          </tr>`;
+        return;
+      }
+
+      Object.keys(data).forEach((key) => {
+        const item = data[key];
+        const statusBadge = item.status === 'AKTIF' 
+          ? '<span class="badge bg-success">AKTIF</span>' 
+          : '<span class="badge bg-danger">NONAKTIF</span>';
+
+        const row = `
+          <tr>
+            <td><code>${item.id_telegram}</code></td>
+            <td class="fw-bold">${item.nama}</td>
+            <td>${item.username || '-'}</td>
+            <td>${item.nik}</td>
+            <td>${statusBadge}</td>
+            <td class="text-center">
+              <button class="btn btn-sm btn-outline-danger btn-hapus" data-id="${item.id_telegram}">
+                <i class="bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+        tabelBodyHD.insertAdjacentHTML('beforeend', row);
+      });
+
+      // Event Listener Hapus User
+      document.querySelectorAll('.btn-hapus').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = e.currentTarget.getAttribute('data-id');
+          if (confirm(`Yakin ingin menghapus User HD dengan ID ${id}?`)) {
+            remove(ref(db, `users_hd/${id}`));
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
