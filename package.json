@@ -1,0 +1,14 @@
+{
+  "name": "telegram-bot-moban",
+  "version": "1.0.0",
+  "description": "Telegram Bot Moban Helpdesk - Vercel & Firebase",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "firebase-admin": "^12.1.0",
+    "node-telegram-bot-api": "^0.66.0"
+  }
+}
