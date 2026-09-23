@@ -323,9 +323,16 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import { getDatabase, ref, update, push, onValue } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-    const firebaseConfig = {
-      // Isikan dengan konfigurasi Firebase Anda
-    };
+    // --- CONFIG FIREBASE ---
+const firebaseConfig = {
+  apiKey: "AIzaSyCIEJHWd7EBzC0FeWgtImNF0CHpPcyCrK4",
+  authDomain: "forminput-9c324.firebaseapp.com",
+  projectId: "forminput-9c324",
+  storageBucket: "forminput-9c324.firebasestorage.app",
+  messagingSenderId: "105974451173",
+  appId: "1:105974451173:web:d2976fc5ed60dad0d23d0c",
+  databaseURL: "https://forminput-9c324-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
