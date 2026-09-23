@@ -107,10 +107,69 @@
     </div>
   </div>
 
+  <!-- MODAL EDIT USER HD -->
+  <div class="modal fade" id="modalEditUser" tabindex="-1" aria-labelledby="modalEditUserLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-warning text-dark fw-semibold">
+          <h5 class="modal-title" id="modalEditUserLabel"><i class="bi-pencil-square me-2"></i>Edit Data User HD</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="formEditUserHD">
+          <div class="modal-body">
+            <!-- ID Telegram dijadikan readonly karena berfungsi sebagai Primary Key -->
+            <div class="mb-3">
+              <label for="editIdTelegram" class="form-label">ID Telegram</label>
+              <input type="number" class="form-control bg-light" id="editIdTelegram" readonly>
+            </div>
+
+            <div class="mb-3">
+              <label for="editUsername" class="form-label">Username Telegram</label>
+              <div class="input-group">
+                <span class="input-group-text">@</span>
+                <input type="text" class="form-control" id="editUsername" placeholder="username_hd">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="editNik" class="form-label">NIK <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="editNik" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="editNama" class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="editNama" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="editPassword" class="form-label">Password Baru <span class="text-muted">(Kosongkan jika tidak diubah)</span></label>
+              <input type="password" class="form-control" id="editPassword" placeholder="••••••••">
+            </div>
+
+            <div class="mb-3">
+              <label for="editStatus" class="form-label">Status <span class="text-danger">*</span></label>
+              <select class="form-select" id="editStatus" required>
+                <option value="AKTIF">AKTIF</option>
+                <option value="NONAKTIF">NONAKTIF</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-warning"><i class="bi-check-circle me-1"></i> Perbarui Data</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
   <!-- Firebase Modular SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, get, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     // 1. Konfigurasi Firebase
     const firebaseConfig = {
@@ -123,21 +182,27 @@
       databaseURL: "https://forminput-9c324-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
 
-    // Inisialisasi Firebase
+    // Inisialisasi Firebase & Element
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
     const formUserHD = document.getElementById('formUserHD');
+    const formEditUserHD = document.getElementById('formEditUserHD');
     const tabelBodyHD = document.getElementById('tabelBodyHD');
+    const modalEditElement = document.getElementById('modalEditUser');
+    const modalEdit = new bootstrap.Modal(modalEditElement);
 
-    // 2. SIMPAN DATA USER HD KE FIREBASE (Node path: `users_hd/{id_telegram}`)
+    // Variable temporer menyimpan password lama saat edit
+    let activeUserPassword = '';
+
+    // 2. SIMPAN DATA USER HD BARU
     formUserHD.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const idTelegram = document.getElementById('idTelegram').value.trim();
       let username = document.getElementById('username').value.trim();
-      if (username && !username.startsWith('@')) {
-        username = '@' + username;
+      if (username) {
+        username = username.startsWith('@') ? username : '@' + username;
       }
 
       const payloadHD = {
@@ -150,7 +215,6 @@
       };
 
       try {
-        // Simpan data berdasarkan ID Telegram sebagai Primary Key
         await set(ref(db, `users_hd/${idTelegram}`), payloadHD);
         alert('User HD Berhasil Didaftarkan!');
         formUserHD.reset();
@@ -188,6 +252,9 @@
             <td>${item.nik}</td>
             <td>${statusBadge}</td>
             <td class="text-center">
+              <button class="btn btn-sm btn-outline-warning me-1 btn-edit" data-id="${item.id_telegram}">
+                <i class="bi-pencil"></i>
+              </button>
               <button class="btn btn-sm btn-outline-danger btn-hapus" data-id="${item.id_telegram}">
                 <i class="bi-trash"></i>
               </button>
@@ -197,7 +264,36 @@
         tabelBodyHD.insertAdjacentHTML('beforeend', row);
       });
 
-      // Event Listener Hapus User
+      // Event Listener Tombol Edit
+      document.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = e.currentTarget.getAttribute('data-id');
+          
+          try {
+            const userSnapshot = await get(ref(db, `users_hd/${id}`));
+            if (userSnapshot.exists()) {
+              const userData = userSnapshot.val();
+              
+              // Isi field modal dengan data dari database
+              document.getElementById('editIdTelegram').value = userData.id_telegram;
+              document.getElementById('editUsername').value = (userData.username || '').replace(/^@/, '');
+              document.getElementById('editNik').value = userData.nik;
+              document.getElementById('editNama').value = userData.nama;
+              document.getElementById('editStatus').value = userData.status;
+              document.getElementById('editPassword').value = ''; // Reset password field
+              
+              activeUserPassword = userData.password; // Simpan password eksis
+
+              modalEdit.show();
+            }
+          } catch (error) {
+            console.error('Error fetching user data:', error);
+            alert('Gagal mengambil data user!');
+          }
+        });
+      });
+
+      // Event Listener Tombol Hapus
       document.querySelectorAll('.btn-hapus').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const id = e.currentTarget.getAttribute('data-id');
@@ -206,6 +302,37 @@
           }
         });
       });
+    });
+
+    // 4. SUBMIT PERUBAHAN DATA (UPDATE)
+    formEditUserHD.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const idTelegram = document.getElementById('editIdTelegram').value;
+      let username = document.getElementById('editUsername').value.trim();
+      if (username) {
+        username = username.startsWith('@') ? username : '@' + username;
+      }
+
+      const inputPassword = document.getElementById('editPassword').value;
+
+      // Gunakan password baru jika diisi, jika kosong gunakan password lama
+      const updatedPayload = {
+        username: username,
+        nik: document.getElementById('editNik').value.trim(),
+        nama: document.getElementById('editNama').value.trim(),
+        status: document.getElementById('editStatus').value,
+        password: inputPassword ? inputPassword : activeUserPassword
+      };
+
+      try {
+        await update(ref(db, `users_hd/${idTelegram}`), updatedPayload);
+        alert('Data User HD Berhasil Diperbarui!');
+        modalEdit.hide();
+      } catch (error) {
+        console.error('Error updating data:', error);
+        alert('Gagal memperbarui data!');
+      }
     });
   </script>
 </body>
