@@ -15,7 +15,7 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* BUBBLE CHAT MINT / WA STYLE */
+    /* BUBBLE CHAT HIJAU SOFT / MINT (WA / TELEGRAM STYLE) */
     .chat-container {
       max-height: 400px;
       overflow-y: auto;
@@ -81,10 +81,6 @@
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container-fluid">
       <a class="navbar-brand fw-bold" href="#"><i class="bi bi-headset me-2"></i>Helpdesk & Monitoring System</a>
-      <div class="d-flex align-items-center gap-3">
-        <span class="text-light small" id="userDisplay"><i class="bi bi-person-circle me-1"></i> Belum Login</span>
-        <button class="btn btn-outline-light btn-sm hidden" id="btnLogout"><i class="bi bi-box-arrow-right me-1"></i> Logout</button>
-      </div>
     </div>
   </nav>
 
@@ -283,33 +279,6 @@
 
   </div>
 
-  <!-- MODAL LOGIN PETUGAS HD (MENGGUNAKAN NIK & PASSWORD) -->
-  <div class="modal fade" id="modalLogin" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content shadow-lg border-0">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title fw-bold"><i class="bi bi-shield-lock me-2"></i>Login Petugas Helpdesk</h5>
-        </div>
-        <div class="modal-body p-4">
-          <div id="loginAlert" class="alert alert-danger d-none small"></div>
-          <form id="formLogin">
-            <div class="mb-3">
-              <label class="form-label fw-semibold">NIK</label>
-              <input type="text" id="loginNik" class="form-control" placeholder="Masukkan NIK Anda" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Password</label>
-              <input type="password" id="loginPassword" class="form-control" placeholder="Masukkan Password" required>
-            </div>
-            <button type="submit" id="btnLoginSubmit" class="btn btn-primary w-100 fw-bold py-2">
-              <i class="bi bi-box-arrow-in-right me-1"></i> Masuk Sistem
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- MODAL DISKUSI / CHAT -->
   <div class="modal fade" id="modalDiskusi" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -348,9 +317,9 @@
   <!-- LOGIC SYSTEM MODULE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-    import { getDatabase, ref, update, push, onValue, get } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+    import { getDatabase, ref, update, push, onValue } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-    // KREDENSIAL FIREBASE[cite: 2]
+    // KREDENSIAL FIREBASE
     const firebaseConfig = {
       apiKey: "AIzaSyCIEJHWd7EBzC0FeWgtImNF0CHpPcyCrK4",
       authDomain: "forminput-9c324.firebaseapp.com",
@@ -364,20 +333,20 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // TOKEN BOT TELEGRAM
-    const BOT_TOKEN = "8909044741:AAGGON5bVVhPbNAFNEsjMDYGrvR3NSkded4"; // GANTI DENGAN TOKEN ASLI
+    // GANTI SESUAI TOKEN BOT TELEGRAM ANDA
+    const BOT_TOKEN = "8909044741:AAGGON5bVVhPbNAFNEsjMDYGrvR3NSkded4";
 
-    window.activeUser = null;
+    // USER HD AKTIF
+    window.activeUser = {
+      id_telegram: "123456789",
+      nama: "Afid Analyst",
+      nik: "HD1001"
+    };
+
     window.globalPermintaanData = {};
     window.activeDiskusiTiketKey = null;
 
     // DOM Elements
-    const modalLogin = new bootstrap.Modal(document.getElementById('modalLogin'));
-    const formLogin = document.getElementById('formLogin');
-    const loginAlert = document.getElementById('loginAlert');
-    const userDisplay = document.getElementById('userDisplay');
-    const btnLogout = document.getElementById('btnLogout');
-
     const tabelOpenBody = document.getElementById('tabelOpenBody');
     const tabelMyBody = document.getElementById('tabelMyBody');
     const tabelClosedBody = document.getElementById('tabelClosedBody');
@@ -396,82 +365,6 @@
     const btnRemoveImage = document.getElementById('btnRemoveImage');
 
     let selectedImageFile = null;
-
-    // --- MANAJEMEN SESSION LOGIN ---
-    function checkSession() {
-      const savedUser = localStorage.getItem('hd_active_user');
-      if (savedUser) {
-        window.activeUser = JSON.parse(savedUser);
-        userDisplay.innerHTML = `<i class="bi bi-person-circle me-1"></i> <b>${window.activeUser.nama}</b> (${window.activeUser.nik})`;
-        btnLogout.classList.remove('hidden');
-        modalLogin.hide();
-      } else {
-        window.activeUser = null;
-        userDisplay.innerHTML = `<i class="bi bi-person-circle me-1"></i> Belum Login`;
-        btnLogout.classList.add('hidden');
-        modalLogin.show();
-      }
-    }
-
-    // AUTHENTIKASI LOGIN MEMBACA NODE `users_hd`
-    formLogin.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const inputNik = document.getElementById('loginNik').value.trim();
-      const inputPass = document.getElementById('loginPassword').value.trim();
-      const btnSubmit = document.getElementById('btnLoginSubmit');
-
-      loginAlert.classList.add('d-none');
-      btnSubmit.disabled = true;
-      btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Memeriksa...`;
-
-      try {
-        const usersSnapshot = await get(ref(db, 'users_hd'));
-        const usersData = usersSnapshot.val();
-
-        let foundUser = null;
-
-        if (usersData) {
-          Object.keys(usersData).forEach(key => {
-            const u = usersData[key];
-            if (String(u.nik) === String(inputNik) && String(u.password) === String(inputPass)) {
-              foundUser = u;
-            }
-          });
-        }
-
-        if (foundUser) {
-          if (foundUser.status && foundUser.status.toUpperCase() !== 'AKTIF') {
-            loginAlert.innerText = 'Akun Anda tidak aktif!';
-            loginAlert.classList.remove('d-none');
-          } else {
-            // SIMPAN FULL DATA USER KE LOCALSTORAGE (ID TELEGRAM AKAN DIGUNAKAN UNTUK OPERASI TAKEN DKK)
-            localStorage.setItem('hd_active_user', JSON.stringify(foundUser));
-            checkSession();
-            renderTables(globalPermintaanData);
-          }
-        } else {
-          loginAlert.innerText = 'NIK atau Password salah!';
-          loginAlert.classList.remove('d-none');
-        }
-      } catch (err) {
-        console.error('Error Login:', err);
-        loginAlert.innerText = 'Gagal terhubung ke database!';
-        loginAlert.classList.remove('d-none');
-      } finally {
-        btnSubmit.disabled = false;
-        btnSubmit.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> Masuk Sistem`;
-      }
-    });
-
-    btnLogout.addEventListener('click', () => {
-      if (confirm('Apakah Anda yakin ingin keluar?')) {
-        localStorage.removeItem('hd_active_user');
-        checkSession();
-      }
-    });
-
-    // Cek status login saat halaman pertama dimuat
-    checkSession();
 
     // --- INTEGRASI REAL TELEGRAM API ---
     async function sendTelegramReply(chatId, messageId, text) {
@@ -582,8 +475,8 @@
             `);
           }
 
-          // 2. TIKET SAYA (DIKERJAKAN VIA MATCH ID TELEGRAM HD)
-          if (window.activeUser && String(hdUser) === String(window.activeUser.id_telegram) && (status === 'DIKERJAKAN' || status === 'PROCESS' || status === 'PROGRESS')) {
+          // 2. TIKET SAYA (DIKERJAKAN)
+          if (String(hdUser) === String(activeUser.id_telegram) && (status === 'DIKERJAKAN' || status === 'PROCESS' || status === 'PROGRESS')) {
             myCount++;
             const selectedConfig = kategori === '/config' ? 'selected' : '';
             const selectedBukis = kategori === '/bukis' ? 'selected' : '';
@@ -648,14 +541,9 @@
     }
 
     function attachTableEvents() {
-      // TAKE ORDER MENULIS ID_TELEGRAM HD
+      // TAKE ORDER
       document.querySelectorAll('.btn-take').forEach(btn => {
         btn.onclick = async (e) => {
-          if (!window.activeUser) {
-            modalLogin.show();
-            return;
-          }
-
           const key = e.currentTarget.getAttribute('data-key');
           const item = globalPermintaanData[key];
           const timestampTaken = new Date().toLocaleString('id-ID');
@@ -667,7 +555,7 @@
             if (targetChatId) {
               const pesanReply = `<b>[INFORMASI TIKET TAKEN]</b>\n\n` +
                                  `Tiket <code>${item.tiket_id || item.id_tiket || key}</code> sedang diproses oleh HD:\n` +
-                                 `<b>${window.activeUser.nama}</b> (NIK: ${window.activeUser.nik})`;
+                                 `<b>${activeUser.nama}</b> (NIK: ${activeUser.nik})`;
 
               const resTG = await sendTelegramReply(targetChatId, targetMessageId, pesanReply);
               
@@ -676,22 +564,21 @@
                 return;
               }
 
-              // MENYIMPAN ID TELEGRAM USER AKTIFF KE DATABASE TIKET
               await update(ref(db, `permintaan/${key}`), {
-                id_telegram_hd: window.activeUser.id_telegram,
-                nama_hd: window.activeUser.nama,
-                nik_hd: window.activeUser.nik,
+                id_telegram_hd: activeUser.id_telegram,
+                nama_hd: activeUser.nama,
+                nik_hd: activeUser.nik,
                 status: 'DIKERJAKAN',
                 timestamp_taken: timestampTaken
               });
 
               push(ref(db, 'diskusi'), {
                 id_tiket: item.tiket_id || item.id_tiket || key,
-                id_telegram: window.activeUser.id_telegram,
+                id_telegram: activeUser.id_telegram,
                 chat_id: targetChatId,
                 message_id: resTG?.result?.message_id || "",
                 timestamp: timestampTaken,
-                teks: `[TAKE ORDER] Tiket diproses oleh HD: ${window.activeUser.nama}`,
+                teks: `[TAKE ORDER] Tiket diproses oleh HD: ${activeUser.nama}`,
                 id_file: ""
               });
             }
@@ -707,11 +594,6 @@
       // CLOSE TICKET
       document.querySelectorAll('.btn-close-ticket').forEach(btn => {
         btn.onclick = async (e) => {
-          if (!window.activeUser) {
-            modalLogin.show();
-            return;
-          }
-
           const key = e.currentTarget.getAttribute('data-key');
           const item = globalPermintaanData[key];
           const kategori = item.kategori_pekerjaan || item.kategori;
@@ -730,7 +612,7 @@
 
               if (targetChatId) {
                 const pesanClose = `<b>[TIKET CLOSED]</b>\n\n` +
-                                   `Tiket <code>${item.tiket_id || item.id_tiket || key}</code> telah diselesaikan oleh HD <b>${window.activeUser.nama}</b>.`;
+                                   `Tiket <code>${item.tiket_id || item.id_tiket || key}</code> telah diselesaikan oleh HD <b>${activeUser.nama}</b>.`;
 
                 const resTG = await sendTelegramReply(targetChatId, targetMessageId, pesanClose);
 
@@ -746,11 +628,11 @@
 
                 push(ref(db, 'diskusi'), {
                   id_tiket: item.tiket_id || item.id_tiket || key,
-                  id_telegram: window.activeUser.id_telegram,
+                  id_telegram: activeUser.id_telegram,
                   chat_id: targetChatId,
                   message_id: resTG?.result?.message_id || "",
                   timestamp: timestampClose,
-                  teks: `[CLOSED] Tiket diselesaikan oleh HD: ${window.activeUser.nama}`,
+                  teks: `[CLOSED] Tiket diselesaikan oleh HD: ${activeUser.nama}`,
                   id_file: ""
                 });
               }
@@ -767,11 +649,6 @@
       // OPEN MODAL DISKUSI
       document.querySelectorAll('.btn-diskusi').forEach(btn => {
         btn.onclick = (e) => {
-          if (!window.activeUser) {
-            modalLogin.show();
-            return;
-          }
-
           activeDiskusiTiketKey = e.currentTarget.getAttribute('data-key');
           const item = globalPermintaanData[activeDiskusiTiketKey];
           const tId = item.tiket_id || item.id_tiket || activeDiskusiTiketKey;
@@ -814,7 +691,7 @@
           const chat = data[key];
           if (chat.id_tiket === tiketId) {
             chatFound = true;
-            const isMe = window.activeUser && String(chat.id_telegram) === String(window.activeUser.id_telegram);
+            const isMe = String(chat.id_telegram) === String(activeUser.id_telegram);
             const bubbleClass = isMe ? 'chat-bubble-me' : 'chat-bubble-them';
 
             let imgElement = '';
@@ -884,14 +761,9 @@
       resetImageSelection();
     }
 
-    // FORM SUBMIT BALASAN DISKUSI
+    // FORM SUBMIT DENGAN NOTIFIKASI TELEGRAM DIJAMIN MASUK
     formKirimDiskusi.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (!window.activeUser) {
-        modalLogin.show();
-        return;
-      }
-
       const pesan = teksBalasan.value.trim();
 
       if (!pesan && !selectedImageFile) {
@@ -933,10 +805,10 @@
         return;
       }
 
-      // SIMPAN DENGAN ID_TELEGRAM DARI SESSION LOGGED IN USER
+      // Simpan ke DB hanya jika Telegram berhasil
       const payloadDiskusi = {
         id_tiket: item.tiket_id || item.id_tiket || activeDiskusiTiketKey,
-        id_telegram: window.activeUser.id_telegram,
+        id_telegram: activeUser.id_telegram,
         chat_id: targetChatId,
         message_id: telegramRes?.result?.message_id || "",
         timestamp: timestampNow,
