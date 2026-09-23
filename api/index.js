@@ -6,7 +6,7 @@ const { getDatabase, ref, set } = require('firebase/database');
 const app = express();
 app.use(express.json());
 
-// 1. Konfigurasi Firebase SDK Client
+// 1. Konfigurasi Firebase SDK Client (Asli Milik Anda)
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY || "AIzaSyCIEJHWd7EBzC0FeWgtlmNF0CHpPcyCrK4",
   authDomain: process.env.FIREBASE_AUTH_DOMAIN || "forminput-9c324.firebaseapp.com",
@@ -17,62 +17,65 @@ const firebaseConfig = {
   databaseURL: "https://forminput-9c324-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
+// Inisialisasi Firebase & Realtime Database
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getDatabase(firebaseApp);
 
-// 2. Inisialisasi Telegram Bot
+// 2. Inisialisasi Telegram Bot (Asli Milik Anda)
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN || "8909044741:AAGGON5bVVhPbNAFNEsjMDYGrvR3NSkded4";
 const bot = new TelegramBot(TELEGRAM_TOKEN);
 
-// Generator Ticket ID Anti-Duplikat
+// Helper function untuk generate Ticket ID Unik (Anti-Duplikat: gabungan tanggal, jam, ms & id user)
 function generateTicketId(userId) {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-  const millis = String(now.getMilliseconds()).padStart(3, '0');
-
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const hours = String(today.getHours()).padStart(2, '0');
+  const minutes = String(today.getMinutes()).padStart(2, '0');
+  const seconds = String(today.getSeconds()).padStart(2, '0');
+  const millis = String(today.getMilliseconds()).padStart(3, '0');
+  
   const dateStr = `${year}${month}${day}`;
   const timeStr = `${hours}${minutes}${seconds}`;
-
+  
   return `TK-${dateStr}-${timeStr}-${userId}-${millis}`;
 }
 
-// 3. Endpoint Webhook
+// 3. Endpoint Webhook Vercel
 app.post('/api/webhook', async (req, res) => {
   try {
     const update = req.body;
-    const message = update.message || update.edited_message;
 
+    // Pastikan ada payload pesan
+    const message = update.message || update.edited_message;
     if (!message) {
       return res.status(200).send('No message received');
     }
 
+    // Ambil isi pesan teks atau caption foto/dokumen
     const textContent = message.text || message.caption || '';
 
-    // Filter hashtag #moban
+    // Cek apakah teks/caption mengandung hashtag #moban (case-insensitive)
     if (textContent.toLowerCase().includes('#moban')) {
       const idTelegramTeknisi = String(message.from.id);
       const ticketId = generateTicketId(idTelegramTeknisi);
       const timestampCreated = new Date(message.date * 1000).toISOString();
 
-      let segmen = 'B2C';
+      // Data Teknisi pengirim
+      const usernameTeknisi = message.from.username ? `@${message.from.username}` : '';
+      const namaTeknisi = `${message.from.first_name || ''} ${message.from.last_name || ''}`.trim();
 
-      // Ambil file_id jika pesan mengandung foto
+      // Deteksi File ID Foto jika ada
       let fileId = '';
       if (message.photo && message.photo.length > 0) {
         fileId = message.photo[message.photo.length - 1].file_id;
       }
 
-      const namaTeknisi = `${message.from.first_name || ''} ${message.from.last_name || ''}`.trim();
-      const usernameTeknisi = message.from.username ? `@${message.from.username}` : '';
-
-      const payloadTiket = {
+      // Payload data tiket (Sesuai susunan baru yang Anda minta)
+      const payloadPermintaan = {
         tiket_id: ticketId,
-        segmen: segmen,
+        segmen: 'B2C',
         kategori_pekerjaan: '',
         chat_id: String(message.chat.id),
         message_id: String(message.message_id),
@@ -89,19 +92,16 @@ app.post('/api/webhook', async (req, res) => {
         status: 'OPEN'
       };
 
-      // Simpan ke Firebase
-      await set(ref(db, `permintaan/${ticketId}`), payloadTiket);
+      // A. INPUT KE FIREBASE REALTIME DATABASE
+      await set(ref(db, `permintaan/${ticketId}`), payloadPermintaan);
 
-      // Balas ke Telegram
-      const replyMessage = 
-        `✅ *Tiket Permintaan Berhasil Dibuat!*\n\n` +
-        `🎫 *Ticket ID:* \`${ticketId}\`\n` +
-        `🏷️ *Segmen:* \`${segmen}\`\n` +
-        `👤 *Teknisi:* ${namaTeknisi} (${usernameTeknisi || idTelegramTeknisi})\n` +
-        `📌 *Status:* \`OPEN\`\n` +
-        `📷 *Lampiran Foto:* ${fileId ? 'Ada' : 'Tidak ada'}\n\n` +
-        `📝 *Pesan:* \n_${textContent}_\n\n` +
-        `_Tim Helpdesk akan segera merespon tiket ini._`;
+      // B. BOT RESPON: Kirim pesan konfirmasi ke Telegram
+      const replyMessage = `✅ **Tiket Permintaan Berhasil Dibuat!**\n\n` +
+                           `🎫 **Ticket ID:** \`${ticketId}\`\n` +
+                           `👤 **Teknisi:** ${namaTeknisi} (${usernameTeknisi || idTelegramTeknisi})\n` +
+                           `📌 **Status:** \`OPEN\`\n` +
+                           `📝 **Pesan:**\n_${textContent}_\n\n` +
+                           `*Tim Helpdesk akan segera merespon tiket ini.*`;
 
       await bot.sendMessage(message.chat.id, replyMessage, {
         reply_to_message_id: message.message_id,
@@ -109,10 +109,10 @@ app.post('/api/webhook', async (req, res) => {
       });
     }
 
-    return res.status(200).send('OK');
+    res.status(200).send('OK');
   } catch (error) {
     console.error('Error handling webhook:', error);
-    return res.status(500).send('Internal Server Error');
+    res.status(500).send('Internal Server Error');
   }
 });
 
