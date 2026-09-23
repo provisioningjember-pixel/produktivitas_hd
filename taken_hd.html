@@ -375,7 +375,7 @@
 
     // --- CONFIG TELEGRAM BOT ---
     // MASUKKAN TOKEN BOT TELEGRAM ANDA DI SINI
-    const TELEGRAM_BOT_TOKEN = "7883294821:AAG_YOUR_ACTUAL_BOT_TOKEN_HERE"; 
+    const TELEGRAM_BOT_TOKEN = "8909044741:AAGGON5bVVhPbNAFNEsjMDYGrvR3NSkded4"; 
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -434,8 +434,8 @@
     }
 
     async function sendTelegramPhoto(chatId, replyToMessageId, photoFile, caption) {
-      if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN.includes("8909044741:AAGGON5bVVhPbNAFNEsjMDYGrvR3NSkded4")) return null;
-      try {
+  if (!TELEGRAM_BOT_TOKEN) return null;
+  try {
         const formData = new FormData();
         formData.append('chat_id', chatId);
         formData.append('reply_to_message_id', replyToMessageId);
