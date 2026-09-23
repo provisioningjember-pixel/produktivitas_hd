@@ -22,7 +22,7 @@ const firebaseApp = initializeApp(firebaseConfig);
 const db = getDatabase(firebaseApp);
 
 // 2. Inisialisasi Telegram Bot (Webhook Mode)
-const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
+const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN || "8909044741:AAGfnrFMBTUKcz9E50ZhB2wXoKBy6bTyk30";
 const bot = new TelegramBot(TELEGRAM_TOKEN);
 
 // Helper function untuk generate Unique Ticket ID (Contoh: TK-20260923-8492)
