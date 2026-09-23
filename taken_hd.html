@@ -3,44 +3,174 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Helpdesk Workspace - Take Order</title>
+  <title>Helpdesk Workspace - Take & Close Order</title>
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <!-- Google Fonts (Inter) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-    body { background-color: #f4f6f9; }
+    :root {
+      --sidebar-width: 260px;
+      --sidebar-bg: #1e293b;
+      --sidebar-color: #94a3b8;
+      --body-bg: #f8fafc;
+      --card-border-radius: 12px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--body-bg);
+      color: #334155;
+      overflow-x: hidden;
+    }
+
     .hidden { display: none !important; }
-    .badge-open { background-color: #ffc107; color: #000; }
-    .badge-dikerjakan { background-color: #0d6efd; color: #fff; }
-    .nav-pills .nav-link.active { font-weight: bold; }
+
+    /* ================= LOGIN STYLES ================= */
+    .login-wrapper {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-login {
+      border: none;
+      border-radius: 16px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+      background: #ffffff;
+    }
+
+    /* ================= DASHBOARD LAYOUT ================= */
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+    .app-sidebar {
+      width: var(--sidebar-width);
+      background-color: var(--sidebar-bg);
+      color: var(--sidebar-color);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+    }
+    .sidebar-brand {
+      padding: 1.25rem 1.5rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #ffffff;
+      border-bottom: 1px solid #334155;
+    }
+    .sidebar-menu {
+      padding: 1rem 0.75rem;
+      flex-grow: 1;
+    }
+    .sidebar-menu .nav-link {
+      color: #94a3b8;
+      font-weight: 500;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s;
+    }
+    .sidebar-menu .nav-link:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .sidebar-menu .nav-link.active {
+      color: #ffffff;
+      background: #3b82f6;
+    }
+
+    .app-main {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    /* Navbar Modern */
+    .top-navbar {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 0.85rem 1.5rem;
+    }
+
+    /* Cards & Tables */
+    .card-custom {
+      border: 1px solid #e2e8f0;
+      border-radius: var(--card-border-radius);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+      background: #ffffff;
+    }
+    .table thead th {
+      background-color: #f1f5f9;
+      color: #475569;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      padding: 0.85rem 1rem;
+      border-bottom: none;
+    }
+    .table tbody td {
+      padding: 0.85rem 1rem;
+      font-size: 0.9rem;
+      border-color: #f1f5f9;
+    }
+
+    /* Badges Modern */
+    .badge-status {
+      padding: 0.35em 0.75em;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 6px;
+    }
+    .badge-open { background-color: #fef3c7; color: #d97706; }
+    .badge-dikerjakan { background-color: #dbeafe; color: #2563eb; }
+    .badge-closed { background-color: #dcfce7; color: #16a34a; }
+
+    /* Responsive adjustment */
+    @media (max-width: 991.98px) {
+      .app-layout { flex-direction: column; }
+      .app-sidebar { width: 100%; }
+    }
   </style>
 </head>
 <body>
 
   <!-- ==================== SECTION 1: LOGIN PAGE ==================== -->
-  <div id="loginSection" class="container d-flex align-items-center justify-content-center min-vh-100">
-    <div class="card shadow-lg border-0 style-login" style="max-width: 400px; width: 100%;">
-      <div class="card-body p-4">
+  <div id="loginSection" class="login-wrapper">
+    <div class="card card-login p-4" style="max-width: 400px; width: 90%;">
+      <div class="card-body">
         <div class="text-center mb-4">
-          <i class="bi-headset text-primary display-4"></i>
-          <h4 class="fw-bold mt-2">Login Helpdesk</h4>
-          <p class="text-muted small">Masuk menggunakan NIK dan Password Anda</p>
+          <div class="d-inline-flex p-3 bg-primary bg-opacity-10 text-primary rounded-circle mb-3">
+            <i class="bi-headset display-6"></i>
+          </div>
+          <h4 class="fw-bold text-dark">Portal Helpdesk</h4>
+          <p class="text-muted small">Masuk menggunakan NIK & Password Anda</p>
         </div>
 
         <div id="loginAlert" class="alert alert-danger py-2 small hidden" role="alert"></div>
 
         <form id="formLogin">
           <div class="mb-3">
-            <label for="loginNik" class="form-label fw-semibold">NIK</label>
-            <input type="text" class="form-control" id="loginNik" placeholder="Masukkan NIK" required>
+            <label for="loginNik" class="form-label fw-semibold small text-secondary">NIK</label>
+            <input type="text" class="form-control form-control-lg fs-6" id="loginNik" placeholder="Masukkan NIK" required>
           </div>
           <div class="mb-3">
-            <label for="loginPassword" class="form-label fw-semibold">Password</label>
-            <input type="password" class="form-control" id="loginPassword" placeholder="••••••••" required>
+            <label for="loginPassword" class="form-label fw-semibold small text-secondary">Password</label>
+            <input type="password" class="form-control form-control-lg fs-6" id="loginPassword" placeholder="••••••••" required>
           </div>
-          <button type="submit" class="btn btn-primary w-100 fw-bold py-2" id="btnLogin">
-            <i class="bi-box-arrow-in-right me-1"></i> Masuk
+          <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold fs-6 mt-2" id="btnLogin">
+            <i class="bi-box-arrow-in-right me-1"></i> Masuk Sekarang
           </button>
         </form>
       </div>
@@ -48,107 +178,183 @@
   </div>
 
   <!-- ==================== SECTION 2: MAIN DASHBOARD ==================== -->
-  <div id="dashboardSection" class="hidden">
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-      <div class="container-fluid">
-        <span class="navbar-brand fw-bold"><i class="bi-headset me-2"></i>Workspace HD</span>
-        <div class="d-flex align-items-center text-white">
-          <div class="me-3 text-end">
-            <div class="fw-bold" id="userNamaDisplay">-</div>
-            <div class="small opacity-75" id="userNikDisplay">-</div>
-          </div>
-          <button class="btn btn-outline-light btn-sm" id="btnLogout" title="Keluar">
-            <i class="bi-box-arrow-right"></i> Logout
+  <div id="dashboardSection" class="app-layout hidden">
+    
+    <!-- SIDEBAR LEFT ALA ADMINLTE MODERN -->
+    <aside class="app-sidebar">
+      <div class="sidebar-brand">
+        <i class="bi bi-cpu-fill text-primary me-2"></i> HD Workspace
+      </div>
+      
+      <div class="sidebar-menu">
+        <div class="text-uppercase small fw-bold px-3 mb-2 text-muted" style="font-size:0.7rem;">Navigasi Utama</div>
+        <div class="nav flex-column nav-pills" role="tablist">
+          <button class="nav-link active" id="tab-open-btn" data-bs-toggle="pill" data-bs-target="#tab-open" type="button" role="tab">
+            <span><i class="bi-inbox-fill me-2"></i> Tiket Open</span>
+            <span class="badge bg-danger rounded-pill ms-auto" id="countOpen">0</span>
+          </button>
+          <button class="nav-link" id="tab-my-btn" data-bs-toggle="pill" data-bs-target="#tab-my" type="button" role="tab">
+            <span><i class="bi-person-workspace me-2"></i> Tiket Saya</span>
+            <span class="badge bg-primary rounded-pill ms-auto" id="countMy">0</span>
           </button>
         </div>
       </div>
-    </nav>
 
-    <!-- Main Content Container -->
-    <div class="container my-4">
-      <!-- Navigation Tabs -->
-      <ul class="nav nav-pills mb-4 bg-white p-2 rounded shadow-sm" id="pills-tab" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="tab-open-btn" data-bs-toggle="pill" data-bs-target="#tab-open" type="button" role="tab">
-            <i class="bi-inbox-fill me-1"></i> Tiket Open (Belum Ditaken)
-            <span class="badge bg-danger ms-1" id="countOpen">0</span>
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="tab-my-btn" data-bs-toggle="pill" data-bs-target="#tab-my" type="button" role="tab">
-            <i class="bi-person-workspace me-1"></i> Tiket Saya (Sedang Dikerjakan)
-            <span class="badge bg-primary ms-1" id="countMy">0</span>
-          </button>
-        </li>
-      </ul>
+      <!-- User Profile Box Side Footer -->
+      <div class="p-3 border-top border-secondary border-opacity-25">
+        <div class="d-flex align-items-center">
+          <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-2" style="width: 38px; height: 38px;">
+            <i class="bi-person-fill"></i>
+          </div>
+          <div class="overflow-hidden me-auto">
+            <div class="fw-semibold text-white text-truncate small" id="userNamaDisplay">-</div>
+            <div class="text-muted small text-truncate" style="font-size: 0.75rem;" id="userNikDisplay">-</div>
+          </div>
+        </div>
+      </div>
+    </aside>
 
-      <!-- Tab Content -->
-      <div class="tab-content" id="pills-tabContent">
-        
-        <!-- TAB 1: TIKET OPEN -->
-        <div class="tab-pane fade show active" id="tab-open" role="tabpanel">
-          <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white fw-bold py-3">
-              Daftar Tiket Antrean (Open)
-            </div>
-            <div class="card-body p-0">
-              <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                  <thead class="table-light">
-                    <tr>
-                      <th>ID Tiket</th>
-                      <th>Tanggal / Waktu</th>
-                      <th>Pelapor (ID Telegram)</th>
-                      <th>Uraian Permintaan</th>
-                      <th>Status</th>
-                      <th class="text-center">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tabelOpenBody">
-                    <tr>
-                      <td colspan="6" class="text-center py-4 text-muted">
-                        <div class="spinner-border spinner-border-sm text-primary me-2"></div>
-                        Mengkoneksikan ke antrean realtime...
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+    <!-- MAIN CONTENT RIGHT AREA -->
+    <main class="app-main">
+      <!-- Navbar Top -->
+      <header class="top-navbar d-flex align-items-center justify-content-between">
+        <h5 class="fw-bold mb-0 text-dark">Dashboard Penanganan Order</h5>
+        <button class="btn btn-outline-danger btn-sm rounded-2" id="btnLogout">
+          <i class="bi-box-arrow-right me-1"></i> Logout
+        </button>
+      </header>
+
+      <!-- Content Area -->
+      <div class="p-4">
+        <div class="tab-content" id="pills-tabContent">
+          
+          <!-- TAB 1: TIKET OPEN -->
+          <div class="tab-pane fade show active" id="tab-open" role="tabpanel">
+            <div class="card card-custom">
+              <div class="card-header bg-transparent border-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+                <h6 class="fw-bold mb-0 text-dark"><i class="bi-list-stars text-warning me-2"></i>Antrean Tiket Open</h6>
+                <span class="small text-muted">Update Realtime (Tanpa Reload)</span>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0">
+                    <thead>
+                      <tr>
+                        <th>ID Tiket</th>
+                        <th>Waktu Masuk</th>
+                        <th>Pelapor</th>
+                        <th>Uraian Permintaan</th>
+                        <th>Status</th>
+                        <th class="text-center">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tabelOpenBody">
+                      <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">
+                          <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                          Mengkoneksikan ke antrean realtime...
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- TAB 2: TIKET SAYA -->
-        <div class="tab-pane fade" id="tab-my" role="tabpanel">
-          <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white fw-bold py-3">
-              Daftar Tiket Ditangan Saya
-            </div>
-            <div class="card-body p-0">
-              <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                  <thead class="table-light">
-                    <tr>
-                      <th>ID Tiket</th>
-                      <th>Waktu Taken</th>
-                      <th>Pelapor</th>
-                      <th>Uraian Permintaan</th>
-                      <th>Kategori Pekerjaan</th>
-                      <th class="text-center">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tabelMyBody">
-                    <tr>
-                      <td colspan="6" class="text-center py-4 text-muted">Belum ada tiket yang Anda ampu.</td>
-                    </tr>
-                  </tbody>
-                </table>
+          <!-- TAB 2: TIKET SAYA -->
+          <div class="tab-pane fade" id="tab-my" role="tabpanel">
+            <div class="card card-custom">
+              <div class="card-header bg-transparent border-0 pt-3 px-3">
+                <h6 class="fw-bold mb-0 text-dark"><i class="bi-gear-wide-connected text-primary me-2"></i>Tiket Sedang Dikerjakan</h6>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0">
+                    <thead>
+                      <tr>
+                        <th>ID Tiket</th>
+                        <th>Waktu Taken</th>
+                        <th>Pelapor</th>
+                        <th>Uraian Permintaan</th>
+                        <th>Kategori Pekerjaan</th>
+                        <th class="text-center">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tabelMyBody">
+                      <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">Belum ada tiket yang Anda ampu.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== MODAL DETAIL TIKET ==================== -->
+  <div class="modal fade" id="modalDetail" tabindex="-1" aria-labelledby="modalDetailLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+        <div class="modal-header bg-dark text-white fw-semibold">
+          <h5 class="modal-title fs-6" id="modalDetailLabel"><i class="bi-info-circle text-primary me-2"></i>Rincian Tiket Permintaan</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label text-muted small mb-0">ID Tiket</label>
+              <div class="fw-bold text-dark fs-6" id="detailIdTiket">-</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-muted small mb-0">Status Tiket</label>
+              <div id="detailStatusBadge">-</div>
+            </div>
+            <hr class="my-2 opacity-25">
+            <div class="col-md-6">
+              <label class="form-label text-muted small mb-0">Nama Pelapor</label>
+              <div class="fw-semibold text-dark" id="detailPelapor">-</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-muted small mb-0">ID Telegram Pelapor</label>
+              <div class="fw-semibold text-dark" id="detailIdTelegramPelapor">-</div>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label text-muted small mb-0">Uraian Permintaan</label>
+              <div class="p-3 bg-light rounded-3 border text-break text-dark small" id="detailUraian">-</div>
+            </div>
+            <hr class="my-2 opacity-25">
+            <div class="col-md-4">
+              <label class="form-label text-muted small mb-0">Waktu Open</label>
+              <div class="small fw-semibold text-dark" id="detailTimeOpen">-</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label text-muted small mb-0">Waktu Taken</label>
+              <div class="small fw-semibold text-dark" id="detailTimeTaken">-</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label text-muted small mb-0">Waktu Closed</label>
+              <div class="small fw-semibold text-dark" id="detailTimeClosed">-</div>
+            </div>
+            <hr class="my-2 opacity-25">
+            <div class="col-md-6">
+              <label class="form-label text-muted small mb-0">Petugas HD Penanggung Jawab</label>
+              <div class="fw-semibold text-dark" id="detailNamaHD">-</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-muted small mb-0">Kategori Pekerjaan</label>
+              <div class="fw-semibold text-dark" id="detailKategori">-</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 bg-light rounded-bottom">
+          <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Tutup</button>
+        </div>
       </div>
     </div>
   </div>
@@ -175,10 +381,9 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // State User Terlogin
     let activeUser = null;
+    let globalPermintaanData = {};
 
-    // Element Selector
     const loginSection = document.getElementById('loginSection');
     const dashboardSection = document.getElementById('dashboardSection');
     const formLogin = document.getElementById('formLogin');
@@ -193,7 +398,10 @@
     const countOpen = document.getElementById('countOpen');
     const countMy = document.getElementById('countMy');
 
-    // 2. OTENTIKASI USER LOGIN (MATCH NIK & PASSWORD)
+    const modalDetailElement = document.getElementById('modalDetail');
+    const modalDetail = new bootstrap.Modal(modalDetailElement);
+
+    // 2. OTENTIKASI USER LOGIN
     formLogin.addEventListener('submit', async (e) => {
       e.preventDefault();
       loginAlert.classList.add('hidden');
@@ -211,7 +419,6 @@
         const usersData = usersSnapshot.val();
         let matchedUser = null;
 
-        // Mencari User berdasarkan match NIK & Password
         Object.keys(usersData).forEach(key => {
           const user = usersData[key];
           if (user.nik === nikInput && user.password === passwordInput) {
@@ -221,22 +428,20 @@
 
         if (matchedUser) {
           if (matchedUser.status !== 'AKTIF') {
-            showLoginError("Akun Anda berstatus NONAKTIF. Hubungi Administrator.");
+            showLoginError("Akun Anda berstatus NONAKTIF!");
             return;
           }
 
-          // Simpan Sesi Login di SessionStorage
           activeUser = matchedUser;
           sessionStorage.setItem('hd_user', JSON.stringify(matchedUser));
-
           initDashboard();
         } else {
-          showLoginError("NIK atau Password yang Anda masukkan salah!");
+          showLoginError("NIK atau Password salah!");
         }
 
       } catch (err) {
         console.error("Login Error:", err);
-        showLoginError("Terjadi gangguan koneksi ke server.");
+        showLoginError("Gangguan koneksi ke server.");
       }
     });
 
@@ -245,7 +450,6 @@
       loginAlert.classList.remove('hidden');
     }
 
-    // Auto Session Check saat halaman terbuka
     window.addEventListener('DOMContentLoaded', () => {
       const savedUser = sessionStorage.getItem('hd_user');
       if (savedUser) {
@@ -254,7 +458,6 @@
       }
     });
 
-    // Logout Action
     btnLogout.addEventListener('click', () => {
       sessionStorage.removeItem('hd_user');
       activeUser = null;
@@ -262,7 +465,7 @@
       loginSection.classList.remove('hidden');
     });
 
-    // 3. INIT DASHBOARD & LISTENER REALTIME FIREBASE
+    // 3. INIT DASHBOARD & LISTENER
     function initDashboard() {
       loginSection.classList.add('hidden');
       dashboardSection.classList.remove('hidden');
@@ -270,22 +473,21 @@
       userNamaDisplay.innerText = activeUser.nama;
       userNikDisplay.innerText = `NIK: ${activeUser.nik}`;
 
-      // MEMASANG LISTENER REALTIME KE NODE `permintaan`
       const permintaanRef = ref(db, 'permintaan');
       onValue(permintaanRef, (snapshot) => {
-        const data = snapshot.val();
-        renderTables(data);
+        globalPermintaanData = snapshot.val() || {};
+        renderTables(globalPermintaanData);
       });
     }
 
-    // 4. RENDER TABEL & REALTIME AUTO-UPDATE (TANPA RELOAD)
+    // 4. RENDER TABEL REALTIME
     function renderTables(data) {
       tabelOpenBody.innerHTML = '';
       tabelMyBody.innerHTML = '';
 
       if (!data) {
-        tabelOpenBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Tidak ada data tiket permintaan.</td></tr>`;
-        tabelMyBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Belum ada tiket yang ditaken.</td></tr>`;
+        tabelOpenBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Tidak ada tiket.</td></tr>`;
+        tabelMyBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Belum ada tiket ditaken.</td></tr>`;
         countOpen.innerText = '0';
         countMy.innerText = '0';
         return;
@@ -296,20 +498,22 @@
 
       Object.keys(data).forEach(key => {
         const item = data[key];
-        item.key_id = key; // Save Firebase Node Key
 
-        // --- HANYA DITAMPILKAN JIKA BELUM DITAKE MANAPUN (STATUS OPEN ATAU BELUM ADA ID TELEGRAM HD) ---
+        // TIKET OPEN
         if (!item.id_telegram_hd && (item.status === 'OPEN' || !item.status)) {
           openCount++;
           const rowOpen = `
             <tr>
               <td><code>${key}</code></td>
-              <td class="small">${item.timestamp || '-'}</td>
-              <td>${item.nama_pelapor || item.id_telegram || '-'}</td>
-              <td>${item.uraian_permintaan || '-'}</td>
-              <td><span class="badge badge-open">OPEN</span></td>
+              <td class="small text-muted">${item.timestamp || '-'}</td>
+              <td class="fw-semibold">${item.nama_pelapor || item.id_telegram || '-'}</td>
+              <td>${truncateText(item.uraian_permintaan, 30)}</td>
+              <td><span class="badge-status badge-open">OPEN</span></td>
               <td class="text-center">
-                <button class="btn btn-sm btn-success fw-bold btn-take" data-key="${key}">
+                <button class="btn btn-sm btn-light border text-dark me-1 btn-detail" data-key="${key}">
+                  <i class="bi-eye"></i> Detail
+                </button>
+                <button class="btn btn-sm btn-success fw-semibold btn-take" data-key="${key}">
                   <i class="bi-hand-index-thumb me-1"></i> Take Order
                 </button>
               </td>
@@ -318,8 +522,8 @@
           tabelOpenBody.insertAdjacentHTML('beforeend', rowOpen);
         }
 
-        // --- DITAMPILKAN PADA TAB TIKET SAYA (DITAKEN OLEH USER HD SAYA SAAT INI) ---
-        if (item.id_telegram_hd === activeUser.id_telegram) {
+        // TIKET SAYA (DIKERJAKAN)
+        if (item.id_telegram_hd === activeUser.id_telegram && item.status === 'DIKERJAKAN') {
           myCount++;
           const selectedConfig = item.kategori_pekerjaan === '/config' ? 'selected' : '';
           const selectedBukis = item.kategori_pekerjaan === '/bukis' ? 'selected' : '';
@@ -327,18 +531,23 @@
           const rowMy = `
             <tr>
               <td><code>${key}</code></td>
-              <td class="small">${item.timestamp_taken || '-'}</td>
-              <td>${item.nama_pelapor || item.id_telegram || '-'}</td>
-              <td>${item.uraian_permintaan || '-'}</td>
+              <td class="small text-muted">${item.timestamp_taken || '-'}</td>
+              <td class="fw-semibold">${item.nama_pelapor || item.id_telegram || '-'}</td>
+              <td>${truncateText(item.uraian_permintaan, 30)}</td>
               <td>
-                <select class="form-select form-select-sm select-kategori" data-key="${key}">
+                <select class="form-select form-select-sm select-kategori border-primary-subtle" data-key="${key}">
                   <option value="" ${!item.kategori_pekerjaan ? 'selected' : ''}>-- Pilih Kategori --</option>
                   <option value="/config" ${selectedConfig}>/config</option>
                   <option value="/bukis" ${selectedBukis}>/bukis</option>
                 </select>
               </td>
               <td class="text-center">
-                <span class="badge badge-dikerjakan"><i class="bi-gear-wide-connected me-1"></i> DIKERJAKAN</span>
+                <button class="btn btn-sm btn-light border text-dark me-1 btn-detail" data-key="${key}">
+                  <i class="bi-eye"></i> Detail
+                </button>
+                <button class="btn btn-sm btn-danger fw-semibold btn-close-ticket" data-key="${key}">
+                  <i class="bi-check2-circle me-1"></i> Close
+                </button>
               </td>
             </tr>
           `;
@@ -346,7 +555,6 @@
         }
       });
 
-      // Update Counters
       countOpen.innerText = openCount;
       countMy.innerText = myCount;
 
@@ -354,23 +562,51 @@
         tabelOpenBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Semua tiket telah ditaken!</td></tr>`;
       }
       if (myCount === 0) {
-        tabelMyBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Belum ada tiket yang Anda ampu saat ini.</td></tr>`;
+        tabelMyBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Tidak ada tiket aktif.</td></tr>`;
       }
 
-      // Attach Event Listeners pasca Render
       attachTableEvents();
     }
 
-    // 5. EVENT HANDLERS (TAKE ORDER & UPDATE KATEGORI)
+    function truncateText(str, max) {
+      if (!str) return '-';
+      return str.length > max ? str.substring(0, max) + '...' : str;
+    }
+
+    // 5. EVENT LISTENERS
     function attachTableEvents() {
-      // Tombol Take Order
+      document.querySelectorAll('.btn-detail').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const key = e.currentTarget.getAttribute('data-key');
+          const item = globalPermintaanData[key];
+
+          if (item) {
+            document.getElementById('detailIdTiket').innerText = key;
+            
+            let badgeHtml = '<span class="badge bg-secondary">UNKNOWN</span>';
+            if (item.status === 'OPEN' || !item.status) badgeHtml = '<span class="badge-status badge-open">OPEN</span>';
+            else if (item.status === 'DIKERJAKAN') badgeHtml = '<span class="badge-status badge-dikerjakan">DIKERJAKAN</span>';
+            else if (item.status === 'CLOSED') badgeHtml = '<span class="badge-status badge-closed">CLOSED</span>';
+            
+            document.getElementById('detailStatusBadge').innerHTML = badgeHtml;
+            document.getElementById('detailPelapor').innerText = item.nama_pelapor || '-';
+            document.getElementById('detailIdTelegramPelapor').innerText = item.id_telegram || '-';
+            document.getElementById('detailUraian').innerText = item.uraian_permintaan || '-';
+            document.getElementById('detailTimeOpen').innerText = item.timestamp || '-';
+            document.getElementById('detailTimeTaken').innerText = item.timestamp_taken || '-';
+            document.getElementById('detailTimeClosed').innerText = item.timestamp_closed || '-';
+            document.getElementById('detailNamaHD').innerText = item.nama_hd ? `${item.nama_hd} (${item.nik_hd || '-'})` : '-';
+            document.getElementById('detailKategori').innerText = item.kategori_pekerjaan || '-';
+
+            modalDetail.show();
+          }
+        });
+      });
+
       document.querySelectorAll('.btn-take').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           const key = e.currentTarget.getAttribute('data-key');
-          
-          // Format ISO / Local Timestamp
-          const now = new Date();
-          const timestampTaken = now.toLocaleString('id-ID');
+          const timestampTaken = new Date().toLocaleString('id-ID');
 
           const updateData = {
             id_telegram_hd: activeUser.id_telegram,
@@ -381,22 +617,43 @@
           };
 
           try {
-            // Update node tiket di database
             await update(ref(db, `permintaan/${key}`), updateData);
-            
-            // Otomatis pindah fokus tab visual HD ke "Tiket Saya"
             const myTabBtn = document.getElementById('tab-my-btn');
-            const tabInstance = bootstrap.Tab.getOrCreateInstance(myTabBtn);
-            tabInstance.show();
-
+            bootstrap.Tab.getOrCreateInstance(myTabBtn).show();
           } catch (error) {
-            console.error('Gagal melakukan Take Order:', error);
+            console.error('Gagal Take Order:', error);
             alert('Gagal mengambil tiket!');
           }
         });
       });
 
-      // Dropdown Kategori Pekerjaan Change Listener
+      document.querySelectorAll('.btn-close-ticket').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const key = e.currentTarget.getAttribute('data-key');
+          const item = globalPermintaanData[key];
+
+          if (!item.kategori_pekerjaan) {
+            alert('Harap pilih Kategori Pekerjaan terlebih dahulu!');
+            return;
+          }
+
+          if (confirm(`Selesaikan tiket ${key}?`)) {
+            const timestampClosed = new Date().toLocaleString('id-ID');
+
+            try {
+              await update(ref(db, `permintaan/${key}`), {
+                status: 'CLOSED',
+                timestamp_closed: timestampClosed
+              });
+              alert('Tiket diselesaikan!');
+            } catch (error) {
+              console.error('Gagal Close Ticket:', error);
+              alert('Gagal menyelesaikan tiket!');
+            }
+          }
+        });
+      });
+
       document.querySelectorAll('.select-kategori').forEach(select => {
         select.addEventListener('change', async (e) => {
           const key = e.currentTarget.getAttribute('data-key');
@@ -407,8 +664,7 @@
               kategori_pekerjaan: value
             });
           } catch (error) {
-            console.error('Gagal memperbarui kategori:', error);
-            alert('Gagal memperbarui kategori pekerjaan!');
+            console.error('Gagal update kategori:', error);
           }
         });
       });
