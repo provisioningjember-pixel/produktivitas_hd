@@ -6,7 +6,7 @@ const { getDatabase, ref, set } = require('firebase/database');
 const app = express();
 app.use(express.json());
 
-// 1. Konfigurasi Firebase SDK Client (Dipertahankan sesuai kode awal)
+// 1. Konfigurasi Firebase SDK Client
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY || "AIzaSyCIEJHWd7EBzC0FeWgtlmNF0CHpPcyCrK4",
   authDomain: process.env.FIREBASE_AUTH_DOMAIN || "forminput-9c324.firebaseapp.com",
@@ -17,19 +17,13 @@ const firebaseConfig = {
   databaseURL: "https://forminput-9c324-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
-// Inisialisasi Firebase & Realtime Database
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getDatabase(firebaseApp);
 
-// 2. Inisialisasi Telegram Bot (Dipertahankan sesuai kode awal)
+// 2. Inisialisasi Telegram Bot
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN || "8909044741:AAGGON5bVVhPbNAFNEsjMDYGrvR3NSkded4";
 const bot = new TelegramBot(TELEGRAM_TOKEN);
 
-/**
- * Generate Ticket ID Unik (Format: TK-YYYYMMDD-HHmmss-USERID-MS)
- * Menggabungkan Waktu Presisi (sampai milidetik) + ID Telegram Teknisi
- * Dijamin unik & anti-duplikat meskipun inputan bersamaan dalam jumlah besar.
- */
 function generateTicketId(userId) {
   const now = new Date();
   const year = now.getFullYear();
@@ -46,33 +40,39 @@ function generateTicketId(userId) {
   return `TK-${dateStr}-${timeStr}-${userId}-${millis}`;
 }
 
+// Helper untuk escape HTML agar pesan caption aman dari error
+function escapeHtml(text) {
+  if (!text) return '';
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // 3. Endpoint Webhook Vercel
 app.post('/api/webhook', async (req, res) => {
   try {
     const update = req.body;
 
-    // Pastikan ada payload pesan
     const message = update.message || update.edited_message;
     if (!message) {
       return res.status(200).send('No message received');
     }
 
-    // Ambil isi pesan teks atau caption foto/dokumen
+    // Ambil isi pesan teks atau caption foto
     const textContent = message.text || message.caption || '';
 
-    // Cek apakah teks/caption mengandung hashtag #moban (case-insensitive)
+    // Cek hashtag #moban
     if (textContent.toLowerCase().includes('#moban')) {
       const idTelegramTeknisi = String(message.from.id);
       const ticketId = generateTicketId(idTelegramTeknisi);
       const timestampCreated = new Date(message.date * 1000).toISOString();
 
-      // Penentuan segmen
-      let segmen = '';
-      if (textContent.toLowerCase().includes('#moban')) {
-        segmen = 'B2C';
-      }
+      let segmen = 'B2C';
 
-      // Deteksi File ID Foto (mengambil resolusi/ukuran tertinggi jika ada)
+      // Deteksi File ID Foto
       let fileId = '';
       if (message.photo && message.photo.length > 0) {
         fileId = message.photo[message.photo.length - 1].file_id;
@@ -82,7 +82,7 @@ app.post('/api/webhook', async (req, res) => {
       const namaTeknisi = `${message.from.first_name || ''} ${message.from.last_name || ''}`.trim();
       const usernameTeknisi = message.from.username ? `@${message.from.username}` : '';
 
-      // Structure Payload Data Tiket
+      // Payload Data Tiket
       const payloadTiket = {
         tiket_id: ticketId,
         segmen: segmen,
@@ -94,7 +94,7 @@ app.post('/api/webhook', async (req, res) => {
         id_telegram_teknisi: idTelegramTeknisi,
         nama_teknisi: namaTeknisi,
         username_teknisi: usernameTeknisi,
-        id_telegram_hd: '', // Cukup ID HD saja untuk relasi tabel HD
+        id_telegram_hd: '',
         timestamp_created: timestampCreated,
         timestamp_taken: '',
         timestamp_close: '',
@@ -105,20 +105,23 @@ app.post('/api/webhook', async (req, res) => {
       // A. INPUT KE FIREBASE REALTIME DATABASE
       await set(ref(db, `permintaan/${ticketId}`), payloadTiket);
 
-      // B. BOT RESPON: Kirim pesan konfirmasi ke Telegram
+      // B. BOT RESPON: Gunakan Format HTML (Jauh lebih aman dari crash Markdown)
+      const safePesan = escapeHtml(textContent);
+      const safeNama = escapeHtml(namaTeknisi);
+
       const replyMessage = 
-        `✅ *Tiket Permintaan Berhasil Dibuat!*\n\n` +
-        `🎫 *Ticket ID:* \`${ticketId}\`\n` +
-        `🏷️ *Segmen:* \`${segmen}\`\n` +
-        `👤 *Teknisi:* ${namaTeknisi} (${usernameTeknisi || idTelegramTeknisi})\n` +
-        `📌 *Status:* \`OPEN\`\n` +
-        `📷 *Lampiran Foto:* ${fileId ? 'Ada' : 'Tidak ada'}\n\n` +
-        `📝 *Pesan:* \n_${textContent}_\n\n` +
-        `_Tim Helpdesk akan segera merespon tiket ini._`;
+        `✅ <b>Tiket Permintaan Berhasil Dibuat!</b>\n\n` +
+        `🎫 <b>Ticket ID:</b> <code>${ticketId}</code>\n` +
+        `🏷️ <b>Segmen:</b> <code>${segmen}</code>\n` +
+        `👤 <b>Teknisi:</b> ${safeNama} (${usernameTeknisi || idTelegramTeknisi})\n` +
+        `📌 <b>Status:</b> <code>OPEN</code>\n` +
+        `📷 <b>Lampiran Foto:</b> ${fileId ? 'Ada' : 'Tidak ada'}\n\n` +
+        `📝 <b>Pesan:</b>\n<i>${safePesan}</i>\n\n` +
+        `<i>Tim Helpdesk akan segera merespon tiket ini.</i>`;
 
       await bot.sendMessage(message.chat.id, replyMessage, {
         reply_to_message_id: message.message_id,
-        parse_mode: 'Markdown'
+        parse_mode: 'HTML'
       });
     }
 
