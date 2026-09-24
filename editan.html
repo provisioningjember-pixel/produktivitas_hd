@@ -1081,9 +1081,14 @@ const dikerjakanItems = Object.keys(globalPermintaanData)
       renderTiketClosed(false);
     });
 
-    function renderTiketClosed(isFiltered = false) {
+  function renderTiketClosed(isFiltered = false) {
   const tbody = document.getElementById('tabelTiketClosed');
   tbody.innerHTML = '';
+
+  // 1. Ambil data user yang sedang login dari Session / LocalStorage / Global Variable
+  const currentUser = JSON.parse(sessionStorage.getItem('user_hd')) || {};
+  const currentUserId = String(currentUser.id_telegram || '');
+  const currentUserName = (currentUser.nama || '').toLowerCase();
 
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
@@ -1100,31 +1105,20 @@ const dikerjakanItems = Object.keys(globalPermintaanData)
     if (eVal) filterEnd = new Date(eVal + 'T23:59:59');
   }
 
-
-
-
-
-      
   // Filter dan balik urutan (.reverse())
-// 1. Ambil data user yang sedang login dari Session / LocalStorage / Global State
-// (Sesuaikan kunci 'currentUser' / 'user_hd' dengan variabel login di aplikasi kamu)
-const currentUser = JSON.parse(sessionStorage.getItem('user_hd')) || {};
-const currentUserId = String(currentUser.id_telegram || '');
-const currentUserName = (currentUser.nama || '').toLowerCase();
-
-const closedItems = Object.keys(globalPermintaanData)
+  const closedItems = Object.keys(globalPermintaanData)
     .map(key => ({ key, ...globalPermintaanData[key] }))
     .filter(item => {
       const status = (item.status || '').toUpperCase();
       
-      // 2. Tambahkan pengecekan kepemilikan HD di sini
+      // 2. Cek kepemilikan tiket berdasarkan ID Telegram atau Nama HD
       const itemHdId = String(item.id_telegram_hd || '');
-      const itemHdName = (item.nama_hd || '').toLowerCase();
+      const itemHdName = (item.nama_hd || item.hd_nama || '').toLowerCase();
       
-      // Cek apakah tiket ini milik HD yang sedang login (berdasarkan ID Telegram atau Nama HD)
       const isMyTicket = (currentUserId && itemHdId === currentUserId) || 
                          (currentUserName && itemHdName.includes(currentUserName));
 
+      // 3. Gabungkan pengecekan Status, User Login, dan Filter Tanggal
       if ((status === 'CLOSED' || status === 'SELESAI') && isMyTicket) {
         const wClose = item.timestamp_close || item.waktu_close;
         const dClose = safeDateParse(wClose);
@@ -1133,10 +1127,6 @@ const closedItems = Object.keys(globalPermintaanData)
       return false;
     })
     .reverse();
-
-
-
-      
 
   closedItems.forEach(item => {
     const key = item.key;
@@ -1162,7 +1152,7 @@ const closedItems = Object.keys(globalPermintaanData)
     `);
   });
 
-  // Update badge di header tabel dan di menu tab
+  // Update badge di header tabel dan di menu tab otomatis sesuai filter user login
   const totalClosed = closedItems.length;
   document.getElementById('closedCountBadge').innerText = `${totalClosed} Tiket`;
   document.getElementById('tabClosedBadge').innerText = totalClosed;
