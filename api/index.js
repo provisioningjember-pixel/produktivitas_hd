@@ -1,7 +1,7 @@
 const express = require('express');
 const TelegramBot = require('node-telegram-bot-api');
 const { initializeApp } = require('firebase/app');
-const { getDatabase, ref, set } = require('firebase/database');
+const { getDatabase, ref, set, push, get, update, query, orderByChild, equalTo } = require('firebase/database');
 
 const app = express();
 app.use(express.json());
@@ -51,61 +51,101 @@ function escapeHtml(text) {
     .replace(/'/g, "&#039;");
 }
 
+// Helper untuk mengekstrak File ID Gambar / Document
+function extractFileId(message) {
+  if (message.photo && message.photo.length > 0) {
+    return message.photo[message.photo.length - 1].file_id;
+  }
+  if (message.document) {
+    return message.document.file_id;
+  }
+  return '';
+}
+
+// Helper untuk mencari ID Tiket berdasarkan message_id yang di-reply
+async function findTicketIdFromReply(replyMessage) {
+  const targetMsgId = String(replyMessage.message_id);
+
+  // 1. Cek di tabel permintaan berdasarkan message_id
+  const permintaanQuery = query(ref(db, 'permintaan'), orderByChild('message_id'), equalTo(targetMsgId));
+  const snapPermintaan = await get(permintaanQuery);
+
+  if (snapPermintaan.exists()) {
+    const data = snapPermintaan.val();
+    const firstKey = Object.keys(data)[0];
+    return data[firstKey].tiket_id || firstKey;
+  }
+
+  // 2. Jika tidak ada di permintaan, cek di tabel diskusi berdasarkan message_id
+  const diskusiQuery = query(ref(db, 'diskusi'), orderByChild('message_id'), equalTo(targetMsgId));
+  const snapDiskusi = await get(diskusiQuery);
+
+  if (snapDiskusi.exists()) {
+    const data = snapDiskusi.val();
+    const firstKey = Object.keys(data)[0];
+    return data[firstKey].id_tiket;
+  }
+
+  // 3. Fallback: Ekstrak Tiket ID jika di dalam teks balasan ada format ID Tiket (TK-XXXX...)
+  const textInReply = replyMessage.text || replyMessage.caption || '';
+  const matchTiket = textInReply.match(/TK-\d{8}-\d{6}-\d+-\d+/);
+  if (matchTiket) {
+    return matchTiket[0];
+  }
+
+  return null;
+}
+
 // 3. Endpoint Webhook Vercel
 app.post('/api/webhook', async (req, res) => {
   try {
     const update = req.body;
-
     const message = update.message || update.edited_message;
+
     if (!message) {
       return res.status(200).send('No message received');
     }
 
-    // Ambil isi pesan teks atau caption foto
     const textContent = message.text || message.caption || '';
+    const fileId = extractFileId(message);
+    const idTelegramUser = String(message.from.id);
+    const chatId = String(message.chat.id);
+    const messageId = String(message.message_id);
+    const timestamp = new Date(message.date * 1000).toISOString();
 
-    // Cek hashtag #moban
+    // =========================================================================
+    // KONDISI A: PENGIRIMAN TIKET BARU DENGAN HASHTAG #MOBAN
+    // =========================================================================
     if (textContent.toLowerCase().includes('#moban')) {
-      const idTelegramTeknisi = String(message.from.id);
-      const ticketId = generateTicketId(idTelegramTeknisi);
-      const timestampCreated = new Date(message.date * 1000).toISOString();
-
+      const ticketId = generateTicketId(idTelegramUser);
       let segmen = 'B2C';
 
-      // Deteksi File ID Foto
-      let fileId = '';
-      if (message.photo && message.photo.length > 0) {
-        fileId = message.photo[message.photo.length - 1].file_id;
-      }
-
-      // Data Teknisi pengirim
       const namaTeknisi = `${message.from.first_name || ''} ${message.from.last_name || ''}`.trim();
       const usernameTeknisi = message.from.username ? `@${message.from.username}` : '';
 
-      // Payload Data Tiket
       const payloadTiket = {
         tiket_id: ticketId,
         segmen: segmen,
         kategori_pekerjaan: '',
-        chat_id: String(message.chat.id),
-        message_id: String(message.message_id),
+        chat_id: chatId,
+        message_id: messageId,
         pesan: textContent,
         file_id: fileId,
-        id_telegram_teknisi: idTelegramTeknisi,
+        id_telegram_teknisi: idTelegramUser,
         nama_teknisi: namaTeknisi,
         username_teknisi: usernameTeknisi,
         id_telegram_hd: '',
-        timestamp_created: timestampCreated,
+        nama_hd: '',
+        nik_hd: '',
+        timestamp_created: timestamp,
         timestamp_taken: '',
         timestamp_close: '',
         keterangan: '',
         status: 'OPEN'
       };
 
-      // A. INPUT KE FIREBASE REALTIME DATABASE
       await set(ref(db, `permintaan/${ticketId}`), payloadTiket);
 
-      // B. BOT RESPON: Gunakan Format HTML (Jauh lebih aman dari crash Markdown)
       const safePesan = escapeHtml(textContent);
       const safeNama = escapeHtml(namaTeknisi);
 
@@ -113,16 +153,54 @@ app.post('/api/webhook', async (req, res) => {
         `✅ <b>Tiket Permintaan Berhasil Dibuat!</b>\n\n` +
         `🎫 <b>Ticket ID:</b> <code>${ticketId}</code>\n` +
         `🏷️ <b>Segmen:</b> <code>${segmen}</code>\n` +
-        `👤 <b>Teknisi:</b> ${safeNama} (${usernameTeknisi || idTelegramTeknisi})\n` +
+        `👤 <b>Teknisi:</b> ${safeNama} (${usernameTeknisi || idTelegramUser})\n` +
         `📌 <b>Status:</b> <code>OPEN</code>\n` +
         `📷 <b>Lampiran Foto:</b> ${fileId ? 'Ada' : 'Tidak ada'}\n\n` +
         `📝 <b>Pesan:</b>\n<i>${safePesan}</i>\n\n` +
         `<i>Tim Helpdesk akan segera merespon tiket ini.</i>`;
 
-      await bot.sendMessage(message.chat.id, replyMessage, {
+      await bot.sendMessage(chatId, replyMessage, {
         reply_to_message_id: message.message_id,
         parse_mode: 'HTML'
       });
+
+      return res.status(200).send('OK');
+    }
+
+    // =========================================================================
+    // KONDISI B: PESAN ADALAH REPLY TERHADAP PESAN TIKET / DISKUSI (REOPEN)
+    // =========================================================================
+    if (message.reply_to_message) {
+      const targetTiketId = await findTicketIdFromReply(message.reply_to_message);
+
+      if (targetTiketId) {
+        // 1. Simpan Data Balasan Baru ke Tabel 'diskusi'
+        const payloadDiskusi = {
+          chat_id: chatId,
+          id_file: fileId,
+          id_telegram: idTelegramUser,
+          id_tiket: targetTiketId,
+          message_id: messageId,
+          teks: textContent,
+          timestamp: timestamp
+        };
+
+        await push(ref(db, 'diskusi'), payloadDiskusi);
+
+        // 2. Update Status Tiket di Tabel 'permintaan' menjadi 'DIKERJAKAN' & Kosongkan timestamp_close
+        await update(ref(db, `permintaan/${targetTiketId}`), {
+          status: 'DIKERJAKAN',
+          timestamp_close: ''
+        });
+
+        // 3. Kirim Konfirmasi ke Telegram
+        await bot.sendMessage(chatId, `💬 Sanggahan/Balasan diterima. Tiket <code>${targetTiketId}</code> berstatus <b>DIKERJAKAN</b> kembali.`, {
+          reply_to_message_id: message.message_id,
+          parse_mode: 'HTML'
+        });
+
+        return res.status(200).send('OK');
+      }
     }
 
     res.status(200).send('OK');
