@@ -645,8 +645,31 @@
       return null;
     }
 
+    
+    
+    function getTelegramImageUrl(fileId) {
+  if (!fileId) return null;
+  
+  // Jika fileId sudah berupa URL langsung atau data Base64
+  if (fileId.startsWith('http') || fileId.startsWith('data:image')) {
+    return fileId;
+  }
+  
+  // Otomatis mengambil variabel token yang sudah ada di atas
+  // (Pastikan nama variabelnya sesuai, misal: TELEGRAM_BOT_TOKEN atau BOT_TOKEN)
+  const token = typeof TELEGRAM_BOT_TOKEN !== 'undefined' ? TELEGRAM_BOT_TOKEN : (typeof BOT_TOKEN !== 'undefined' ? BOT_TOKEN : '');
+
+  if (token) {
+    return `https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`;
+  }
+  
+  return null;
+}
+    
+    
+
     // ==================== 3. RENDER TABEL OPEN ==================== //
-    function renderOpenOrders() {
+   function renderOpenOrders() {
   const tbody = document.getElementById('tabelOpenOrder');
   tbody.innerHTML = '';
 
@@ -665,13 +688,22 @@
     const namaTeknisi = item.nama_teknisi || item.username_teknisi || item.nama || '-';
     const pesanFull = item.pesan || item.permintaan || item.deskripsi || '-';
     const kategori = item.kategori_pekerjaan || item.kategori || '';
-    const fileId = item.id_file || item.foto || item.gambar || '';
+    
+    // Ambil file ID dari properti yang tersedia
+    const fileId = item.id_file || item.foto || item.gambar || item.file_id || '';
 
+    // Penanganan tampilan kolom lampiran
     let fileElement = '<span class="text-muted small">-</span>';
-    if (fileId && fileId.startsWith('data:image')) {
-      fileElement = `<img src="${fileId}" class="img-thumbnail-custom btn-zoom-src" data-img="${fileId}">`;
-    } else if (fileId) {
-      fileElement = `<button class="btn btn-sm btn-outline-info btn-zoom-src" data-img="${fileId}"><i class="fa-solid fa-image"></i></button>`;
+    if (fileId) {
+      if (fileId.startsWith('data:image') || fileId.startsWith('http')) {
+        fileElement = `<img src="${fileId}" class="img-thumbnail-custom btn-zoom-src" data-img="${fileId}">`;
+      } else {
+        // Menampilkan tombol "Lihat" yang membawa data file_id
+        fileElement = `
+          <button class="btn btn-sm btn-outline-primary btn-fetch-telegram-img" data-fileid="${fileId}" title="Lihat Foto Telegram">
+            <i class="fa-solid fa-image me-1"></i> Lihat
+          </button>`;
+      }
     }
 
     tbody.insertAdjacentHTML('beforeend', `
