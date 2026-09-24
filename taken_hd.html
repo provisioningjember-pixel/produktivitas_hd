@@ -780,16 +780,33 @@ async function getTelegramImageUrl(fileId) {
 }
 
     // ==================== 4. RENDER TABEL DIKERJAKAN ==================== //
-    function renderDikerjakanOrders() {
+function renderDikerjakanOrders() {
   const tbody = document.getElementById('tabelDikerjakanOrder');
   tbody.innerHTML = '';
 
-  // Mengubah objek Firebase ke array lalu dibalik (.reverse()) agar data terbaru ada di atas
+  // Dapatkan identifier user login dari activeUser
+  const currentUserId = String(activeUser?.id_telegram || '').trim();
+  const currentUserName = String(activeUser?.nama || activeUser?.nama_hd || activeUser?.nik || '').toLowerCase().trim();
+
+  // Filter tiket DIKERJAKAN khusus milik user yang sedang login
   const dikerjakanItems = Object.keys(globalPermintaanData)
     .map(key => ({ key, ...globalPermintaanData[key] }))
     .filter(item => {
       const status = (item.status || '').toUpperCase();
-      return status === 'DIKERJAKAN' || status === 'PROCESS' || status === 'PROGRESS';
+      const isStatusValid = status === 'DIKERJAKAN' || status === 'PROCESS' || status === 'PROGRESS';
+
+      // Pengecekan kepemilikan HD
+      const itemHdId = String(item.id_telegram_hd || item.id_hd || '').trim();
+      const itemHdName = String(item.nama_hd || item.hd_nama || '').toLowerCase().trim();
+
+      let isMyTicket = false;
+      if (currentUserId && itemHdId && currentUserId === itemHdId) {
+        isMyTicket = true;
+      } else if (currentUserName && itemHdName) {
+        isMyTicket = itemHdName.includes(currentUserName) || currentUserName.includes(itemHdName);
+      }
+
+      return isStatusValid && isMyTicket;
     })
     .reverse();
 
@@ -818,32 +835,32 @@ async function getTelegramImageUrl(fileId) {
         <td>
           <select class="form-select form-select-sm select-kategori" data-key="${key}">
             <option value="" ${!kategori ? 'selected' : ''}>-- Pilih --</option>
-<option value="/DO" ${kategori === '/DO' ? 'selected' : ''}>/DO</option>
-<option value="/AO" ${kategori === '/AO' ? 'selected' : ''}>/AO</option>
-<option value="/Config" ${kategori === '/Config' ? 'selected' : ''}>/Config</option>
-<option value="/Reboot" ${kategori === '/Reboot' ? 'selected' : ''}>/Reboot</option>
-<option value="/SSID/Pass" ${kategori === '/SSID/Pass' ? 'selected' : ''}>/SSID/Pass</option>
-<option value="/Embassy" ${kategori === '/Embassy' ? 'selected' : ''}>/Embassy</option>
-<option value="/CekPort" ${kategori === '/CekPort' ? 'selected' : ''}>/CekPort</option>
-<option value="/Downtime" ${kategori === '/Downtime' ? 'selected' : ''}>/Downtime</option>
-<option value="/Share" ${kategori === '/Share' ? 'selected' : ''}>/Share</option>
-<option value="/CekInet" ${kategori === '/CekInet' ? 'selected' : ''}>/CekInet</option>
-<option value="/Client" ${kategori === '/Client' ? 'selected' : ''}>/Client</option>
-<option value="/OpenLAN" ${kategori === '/OpenLAN' ? 'selected' : ''}>/OpenLAN</option>
-<option value="/DetekONT" ${kategori === '/DetekONT' ? 'selected' : ''}>/DetekONT</option>
-<option value="/Close" ${kategori === '/Close' ? 'selected' : ''}>/Close</option>
-<option value="/FUP" ${kategori === '/FUP' ? 'selected' : ''}>/FUP</option>
-<option value="/CekPaket" ${kategori === '/CekPaket' ? 'selected' : ''}>/CekPaket</option>
-<option value="/Bukis" ${kategori === '/Bukis' ? 'selected' : ''}>/Bukis</option>
-<option value="/Unbindusee" ${kategori === '/Unbindusee' ? 'selected' : ''}>/Unbindusee</option>
-<option value="/Cekpayment" ${kategori === '/Cekpayment' ? 'selected' : ''}>/Cekpayment</option>
-<option value="/Dispatch" ${kategori === '/Dispatch' ? 'selected' : ''}>/Dispatch</option>
-<option value="/Shutdown" ${kategori === '/Shutdown' ? 'selected' : ''}>/Shutdown</option>
-<option value="/Assign" ${kategori === '/Assign' ? 'selected' : ''}>/Assign</option>
-<option value="/Noshutdown" ${kategori === '/Noshutdown' ? 'selected' : ''}>/Noshutdown</option>
-<option value="/Openportlan" ${kategori === '/Openportlan' ? 'selected' : ''}>/Openportlan</option>
-<option value="/PelurusanBW" ${kategori === '/PelurusanBW' ? 'selected' : ''}>/PelurusanBW</option>
-<option value="/Redaman" ${kategori === '/Redaman' ? 'selected' : ''}>/Redaman</option>
+            <option value="/DO" ${kategori === '/DO' ? 'selected' : ''}>/DO</option>
+            <option value="/AO" ${kategori === '/AO' ? 'selected' : ''}>/AO</option>
+            <option value="/Config" ${kategori === '/Config' ? 'selected' : ''}>/Config</option>
+            <option value="/Reboot" ${kategori === '/Reboot' ? 'selected' : ''}>/Reboot</option>
+            <option value="/SSID/Pass" ${kategori === '/SSID/Pass' ? 'selected' : ''}>/SSID/Pass</option>
+            <option value="/Embassy" ${kategori === '/Embassy' ? 'selected' : ''}>/Embassy</option>
+            <option value="/CekPort" ${kategori === '/CekPort' ? 'selected' : ''}>/CekPort</option>
+            <option value="/Downtime" ${kategori === '/Downtime' ? 'selected' : ''}>/Downtime</option>
+            <option value="/Share" ${kategori === '/Share' ? 'selected' : ''}>/Share</option>
+            <option value="/CekInet" ${kategori === '/CekInet' ? 'selected' : ''}>/CekInet</option>
+            <option value="/Client" ${kategori === '/Client' ? 'selected' : ''}>/Client</option>
+            <option value="/OpenLAN" ${kategori === '/OpenLAN' ? 'selected' : ''}>/OpenLAN</option>
+            <option value="/DetekONT" ${kategori === '/DetekONT' ? 'selected' : ''}>/DetekONT</option>
+            <option value="/Close" ${kategori === '/Close' ? 'selected' : ''}>/Close</option>
+            <option value="/FUP" ${kategori === '/FUP' ? 'selected' : ''}>/FUP</option>
+            <option value="/CekPaket" ${kategori === '/CekPaket' ? 'selected' : ''}>/CekPaket</option>
+            <option value="/Bukis" ${kategori === '/Bukis' ? 'selected' : ''}>/Bukis</option>
+            <option value="/Unbindusee" ${kategori === '/Unbindusee' ? 'selected' : ''}>/Unbindusee</option>
+            <option value="/Cekpayment" ${kategori === '/Cekpayment' ? 'selected' : ''}>/Cekpayment</option>
+            <option value="/Dispatch" ${kategori === '/Dispatch' ? 'selected' : ''}>/Dispatch</option>
+            <option value="/Shutdown" ${kategori === '/Shutdown' ? 'selected' : ''}>/Shutdown</option>
+            <option value="/Assign" ${kategori === '/Assign' ? 'selected' : ''}>/Assign</option>
+            <option value="/Noshutdown" ${kategori === '/Noshutdown' ? 'selected' : ''}>/Noshutdown</option>
+            <option value="/Openportlan" ${kategori === '/Openportlan' ? 'selected' : ''}>/Openportlan</option>
+            <option value="/PelurusanBW" ${kategori === '/PelurusanBW' ? 'selected' : ''}>/PelurusanBW</option>
+            <option value="/Redaman" ${kategori === '/Redaman' ? 'selected' : ''}>/Redaman</option>
           </select>
         </td>
         <td><span class="badge bg-warning text-dark">${namaHD}</span></td>
@@ -860,18 +877,22 @@ async function getTelegramImageUrl(fileId) {
 
   // Update badge di header tabel dan di menu tab
   const totalDikerjakan = dikerjakanItems.length;
-  document.getElementById('dikerjakanCountBadge').innerText = `${totalDikerjakan} Tiket`;
-  document.getElementById('tabDikerjakanBadge').innerText = totalDikerjakan;
+  if (document.getElementById('dikerjakanCountBadge')) {
+    document.getElementById('dikerjakanCountBadge').innerText = `${totalDikerjakan} Tiket`;
+  }
+  if (document.getElementById('tabDikerjakanBadge')) {
+    document.getElementById('tabDikerjakanBadge').innerText = totalDikerjakan;
+  }
 
   if (totalDikerjakan === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Tidak ada tiket yang sedang dikerjakan.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Tidak ada tiket yang sedang Anda kerjakan.</td></tr>`;
   }
 
   bindOrderEvents();
 }
 
-    // Bind Event Listeners
-    function bindOrderEvents() {
+// Bind Event Listeners
+function bindOrderEvents() {
   // 1. ZOOM GAMBAR (UNTUK ELEMENT DENGAN CLASS .btn-zoom-src)
   document.querySelectorAll('.btn-zoom-src').forEach(img => {
     img.onclick = (e) => {
@@ -887,14 +908,11 @@ async function getTelegramImageUrl(fileId) {
       const fileId = this.getAttribute('data-fileid');
       const oldHtml = this.innerHTML;
 
-      // Ubah tampilan tombol jadi animasi loading
       this.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Memuat...`;
       this.disabled = true;
 
-      // Panggil fungsi helper Telegram API (getTelegramImageUrl)
       const imgUrl = await getTelegramImageUrl(fileId);
 
-      // Kembalikan tombol ke keadaan semula
       this.innerHTML = oldHtml;
       this.disabled = false;
 
@@ -920,7 +938,6 @@ async function getTelegramImageUrl(fileId) {
       document.getElementById('dtlWaktuClose').innerText = item.timestamp_close || '-';
       document.getElementById('dtlPesan').innerText = item.pesan || item.permintaan || '-';
 
-      // Penanganan Gambar pada Modal Detail
       const fileId = item.id_file || item.foto || item.gambar || item.file_id || '';
       const lampiranContainer = document.getElementById('dtlLampiran');
 
@@ -928,19 +945,16 @@ async function getTelegramImageUrl(fileId) {
         if (fileId.startsWith('data:image') || fileId.startsWith('http')) {
           lampiranContainer.innerHTML = `<img src="${fileId}" style="max-width: 100%; max-height: 250px; border-radius: 6px; cursor: pointer;" class="btn-zoom-src" data-img="${fileId}">`;
           
-          // Binding klik zoom untuk gambar baru ini
           lampiranContainer.querySelector('.btn-zoom-src').onclick = () => {
             document.getElementById('zoomedImageSrc').src = fileId;
             modalZoom.show();
           };
         } else {
-          // Jika berupa Telegram File ID
           lampiranContainer.innerHTML = `
             <button class="btn btn-sm btn-outline-primary btn-fetch-telegram-img" data-fileid="${fileId}">
               <i class="fa-solid fa-image me-1"></i> Lihat Foto Lampiran
             </button>`;
           
-          // Binding klik untuk tombol baru ini
           bindOrderEvents();
         }
       } else {
@@ -1057,18 +1071,23 @@ async function getTelegramImageUrl(fileId) {
   });
 }
 
-    // ==================== 5. RENDER TABEL TIKET CLOSED ==================== //
-    document.getElementById('btnFilterClosed').addEventListener('click', () => renderTiketClosed(true));
-    document.getElementById('btnResetFilterClosed').addEventListener('click', () => {
-      document.getElementById('closedStartDate').value = '';
-      document.getElementById('closedEndDate').value = '';
-      renderTiketClosed(false);
-    });
+// ==================== 5. RENDER TABEL TIKET CLOSED ==================== //
+document.getElementById('btnFilterClosed').addEventListener('click', () => renderTiketClosed(true));
+document.getElementById('btnResetFilterClosed').addEventListener('click', () => {
+  document.getElementById('closedStartDate').value = '';
+  document.getElementById('closedEndDate').value = '';
+  renderTiketClosed(false);
+});
 
-    function renderTiketClosed(isFiltered = false) {
+function renderTiketClosed(isFiltered = false) {
   const tbody = document.getElementById('tabelTiketClosed');
   tbody.innerHTML = '';
 
+  // Dapatkan identifier user login dari activeUser
+  const currentUserId = String(activeUser?.id_telegram || '').trim();
+  const currentUserName = String(activeUser?.nama || activeUser?.nama_hd || activeUser?.nik || '').toLowerCase().trim();
+
+  // Batas rentang waktu bawaan (Kemarin jam 00:00:00 s.d. Hari ini jam 23:59:59)
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
   const yesterdayStart = new Date(todayStart);
@@ -1077,6 +1096,7 @@ async function getTelegramImageUrl(fileId) {
   let filterStart = yesterdayStart;
   let filterEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
 
+  // Jika tombol Filter ditekan dan input tanggal terisi
   if (isFiltered) {
     const sVal = document.getElementById('closedStartDate').value;
     const eVal = document.getElementById('closedEndDate').value;
@@ -1089,10 +1109,28 @@ async function getTelegramImageUrl(fileId) {
     .map(key => ({ key, ...globalPermintaanData[key] }))
     .filter(item => {
       const status = (item.status || '').toUpperCase();
-      if (status === 'CLOSED' || status === 'SELESAI') {
+      const isStatusClosed = status === 'CLOSED' || status === 'SELESAI';
+
+      // 1. Pengecekan kepemilikan user HD
+      const itemHdId = String(item.id_telegram_hd || item.id_hd || '').trim();
+      const itemHdName = String(item.nama_hd || item.hd_nama || '').toLowerCase().trim();
+
+      let isMyTicket = false;
+      if (currentUserId && itemHdId && currentUserId === itemHdId) {
+        isMyTicket = true;
+      } else if (currentUserName && itemHdName) {
+        isMyTicket = itemHdName.includes(currentUserName) || currentUserName.includes(itemHdName);
+      }
+
+      // 2. Pengecekan Tanggal Close
+      if (isStatusClosed && isMyTicket) {
         const wClose = item.timestamp_close || item.waktu_close;
         const dClose = safeDateParse(wClose);
-        return !isFiltered || (dClose && dClose >= filterStart && dClose <= filterEnd);
+
+        // Jika tidak difilter tanggal secara manual, gunakan rentang default (Hari ini & Kemarin)
+        if (dClose && dClose >= filterStart && dClose <= filterEnd) {
+          return true;
+        }
       }
       return false;
     })
@@ -1124,11 +1162,15 @@ async function getTelegramImageUrl(fileId) {
 
   // Update badge di header tabel dan di menu tab
   const totalClosed = closedItems.length;
-  document.getElementById('closedCountBadge').innerText = `${totalClosed} Tiket`;
-  document.getElementById('tabClosedBadge').innerText = totalClosed;
+  if (document.getElementById('closedCountBadge')) {
+    document.getElementById('closedCountBadge').innerText = `${totalClosed} Tiket`;
+  }
+  if (document.getElementById('tabClosedBadge')) {
+    document.getElementById('tabClosedBadge').innerText = totalClosed;
+  }
 
   if (totalClosed === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada tiket closed.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada tiket closed akun Anda untuk periode ini.</td></tr>`;
   }
 
   bindOrderEvents();
