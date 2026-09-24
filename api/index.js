@@ -40,7 +40,6 @@ function generateTicketId(userId) {
   return `TK-${dateStr}-${timeStr}-${userId}-${millis}`;
 }
 
-// Helper untuk escape HTML agar pesan caption aman dari error
 function escapeHtml(text) {
   if (!text) return '';
   return text
@@ -51,7 +50,6 @@ function escapeHtml(text) {
     .replace(/'/g, "&#039;");
 }
 
-// Helper untuk mengekstrak File ID Gambar / Document
 function extractFileId(message) {
   if (message.photo && message.photo.length > 0) {
     return message.photo[message.photo.length - 1].file_id;
@@ -62,41 +60,25 @@ function extractFileId(message) {
   return '';
 }
 
-// Helper Pencarian Tiket berdasarkan Reply Message
+// HELPER PENCARIAN TIKET CEPAT (DENGAN TIKET-MAPPING)
 async function findTicketIdFromReply(replyMessage) {
   const targetMsgId = String(replyMessage.message_id);
   const textInReply = replyMessage.text || replyMessage.caption || '';
 
-  // STRATEGI 1: Cari Regex ID Tiket (TK-XXXXXXXX...) langsung dari isi teks pesan yang di-reply
+  // 1. Ekstrak langsung menggunakan Regex dari teks pesan yang di-reply (Paling Cepat)
   const matchTiket = textInReply.match(/TK-\d{8}-\d{6}-\d+-\d+/);
   if (matchTiket) {
     return matchTiket[0];
   }
 
   try {
-    // STRATEGI 2: Scan node 'permintaan'
-    const snapPermintaan = await get(ref(db, 'permintaan'));
-    if (snapPermintaan.exists()) {
-      const data = snapPermintaan.val();
-      for (const key in data) {
-        if (String(data[key].message_id) === targetMsgId || data[key].tiket_id === key) {
-          return data[key].tiket_id || key;
-        }
-      }
-    }
-
-    // STRATEGI 3: Scan node 'diskusi'
-    const snapDiskusi = await get(ref(db, 'diskusi'));
-    if (snapDiskusi.exists()) {
-      const dataDiskusi = snapDiskusi.val();
-      for (const key in dataDiskusi) {
-        if (String(dataDiskusi[key].message_id) === targetMsgId) {
-          return dataDiskusi[key].id_tiket;
-        }
-      }
+    // 2. Cek pemetaan langsung message_id ke tiket_id di node 'msg_map'
+    const snapMap = await get(ref(db, `msg_map/${targetMsgId}`));
+    if (snapMap.exists()) {
+      return snapMap.val();
     }
   } catch (err) {
-    console.error("Error penelusuran tiket:", err);
+    console.error("Error membaca msg_map:", err);
   }
 
   return null;
@@ -120,13 +102,13 @@ app.post('/api/webhook', async (req, res) => {
     const timestamp = new Date(message.date * 1000).toISOString();
 
     // =========================================================================
-    // PRIORITAS 1: CEK APAKAH PESAN ADALAH REPLY TERHADAP PESAN TIKET / DISKUSI
+    // KONDISI A: PESAN ADALAH REPLY TERHADAP PESAN TIKET / DISKUSI (REOPEN)
     // =========================================================================
     if (message.reply_to_message) {
       const targetTiketId = await findTicketIdFromReply(message.reply_to_message);
 
       if (targetTiketId) {
-        // 1. Simpan Data Balasan Baru ke Tabel 'diskusi'
+        // 1. Simpan Data Balasan ke Tabel 'diskusi'
         const payloadDiskusi = {
           chat_id: chatId,
           id_file: fileId,
@@ -139,13 +121,16 @@ app.post('/api/webhook', async (req, res) => {
 
         await push(ref(db, 'diskusi'), payloadDiskusi);
 
-        // 2. Update Status Tiket di Tabel 'permintaan' menjadi 'DIKERJAKAN' & Kosongkan timestamp_close
+        // Map message_id balasan ini ke tiket_id
+        await set(ref(db, `msg_map/${messageId}`), targetTiketId);
+
+        // 2. Reopen Tiket: Ubah Status ke 'DIKERJAKAN' & Kosongkan timestamp_close
         await update(ref(db, `permintaan/${targetTiketId}`), {
           status: 'DIKERJAKAN',
           timestamp_close: ''
         });
 
-        // 3. Kirim Konfirmasi ke Telegram
+        // 3. Balas ke Telegram
         await bot.sendMessage(chatId, `💬 Sanggahan/Balasan diterima.\n\nTiket <code>${targetTiketId}</code> berstatus <b>DIKERJAKAN</b> kembali.`, {
           reply_to_message_id: message.message_id,
           parse_mode: 'HTML'
@@ -156,7 +141,7 @@ app.post('/api/webhook', async (req, res) => {
     }
 
     // =========================================================================
-    // PRIORITAS 2: PENGIRIMAN TIKET BARU DENGAN HASHTAG #MOBAN
+    // KONDISI B: PENGIRIMAN TIKET BARU DENGAN HASHTAG #MOBAN
     // =========================================================================
     if (textContent.toLowerCase().includes('#moban')) {
       const ticketId = generateTicketId(idTelegramUser);
@@ -188,10 +173,13 @@ app.post('/api/webhook', async (req, res) => {
 
       await set(ref(db, `permintaan/${ticketId}`), payloadTiket);
 
+      // Simpan pemetaan message_id pengguna ke ID tiket
+      await set(ref(db, `msg_map/${messageId}`), ticketId);
+
       const safePesan = escapeHtml(textContent);
       const safeNama = escapeHtml(namaTeknisi);
 
-      const replyMessage = 
+      const replyText = 
         `✅ <b>Tiket Permintaan Berhasil Dibuat!</b>\n\n` +
         `🎫 <b>Ticket ID:</b> <code>${ticketId}</code>\n` +
         `🏷️ <b>Segmen:</b> <code>${segmen}</code>\n` +
@@ -201,10 +189,15 @@ app.post('/api/webhook', async (req, res) => {
         `📝 <b>Pesan:</b>\n<i>${safePesan}</i>\n\n` +
         `<i>Tim Helpdesk akan segera merespon tiket ini.</i>`;
 
-      await bot.sendMessage(chatId, replyMessage, {
+      const botSentMsg = await bot.sendMessage(chatId, replyText, {
         reply_to_message_id: message.message_id,
         parse_mode: 'HTML'
       });
+
+      // Simpan juga pemetaan message_id milik BOT ke ID tiket
+      if (botSentMsg && botSentMsg.message_id) {
+        await set(ref(db, `msg_map/${botSentMsg.message_id}`), ticketId);
+      }
 
       return res.status(200).send('OK');
     }
