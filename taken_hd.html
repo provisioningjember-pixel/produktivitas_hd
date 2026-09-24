@@ -785,30 +785,14 @@ async function getTelegramImageUrl(fileId) {
   tbody.innerHTML = '';
 
   // Mengubah objek Firebase ke array lalu dibalik (.reverse()) agar data terbaru ada di atas
-  // Ambil data user yang sedang login (sesuaikan key session/localStorage dengan variabel aplikasi kamu)
-const currentUser = JSON.parse(sessionStorage.getItem('user_hd')) || {};
-const currentUserId = String(currentUser.id_telegram || '');
-const currentUserName = (currentUser.nama || '').toLowerCase();
-
-const dikerjakanItems = Object.keys(globalPermintaanData)
+  const dikerjakanItems = Object.keys(globalPermintaanData)
     .map(key => ({ key, ...globalPermintaanData[key] }))
     .filter(item => {
       const status = (item.status || '').toUpperCase();
-      const isStatusDikerjakan = status === 'DIKERJAKAN' || status === 'PROCESS' || status === 'PROGRESS';
-
-      // Pengecekan apakah tiket ditangani oleh HD yang sedang login
-      const itemHdId = String(item.id_telegram_hd || '');
-      const itemHdName = (item.nama_hd || '').toLowerCase();
-
-      const isMyTicket = (currentUserId && itemHdId === currentUserId) || 
-                         (currentUserName && itemHdName.includes(currentUserName));
-
-      // Hanya kembalikan true jika status sesuai DAN tiket milik user login
-      return isStatusDikerjakan && isMyTicket;
+      return status === 'DIKERJAKAN' || status === 'PROCESS' || status === 'PROGRESS';
     })
     .reverse();
 
-      
   dikerjakanItems.forEach(item => {
     const key = item.key;
     const tId = item.tiket_id || item.id_tiket || key;
@@ -1023,7 +1007,7 @@ const dikerjakanItems = Object.keys(globalPermintaanData)
           });
 
           if (targetChatId) {
-            const pesanClose = `<b>[laporan telah selesai dikerjakan]</b>\n\nTiket <code>${tId}</code> telah diselesaikan oleh HD <b>${activeUser.nama || activeUser.nik}</b>.`;
+            const pesanClose = `<b>[TIKET CLOSED]</b>\n\nTiket <code>${tId}</code> telah diselesaikan oleh HD <b>${activeUser.nama || activeUser.nik}</b>.`;
             sendTelegramReply(targetChatId, item.message_id, pesanClose);
           }
 
@@ -1100,32 +1084,12 @@ const dikerjakanItems = Object.keys(globalPermintaanData)
     if (eVal) filterEnd = new Date(eVal + 'T23:59:59');
   }
 
-
-
-
-
-      
   // Filter dan balik urutan (.reverse())
-// 1. Ambil data user yang sedang login dari Session / LocalStorage / Global State
-// (Sesuaikan kunci 'currentUser' / 'user_hd' dengan variabel login di aplikasi kamu)
-const currentUser = JSON.parse(sessionStorage.getItem('user_hd')) || {};
-const currentUserId = String(currentUser.id_telegram || '');
-const currentUserName = (currentUser.nama || '').toLowerCase();
-
-const closedItems = Object.keys(globalPermintaanData)
+  const closedItems = Object.keys(globalPermintaanData)
     .map(key => ({ key, ...globalPermintaanData[key] }))
     .filter(item => {
       const status = (item.status || '').toUpperCase();
-      
-      // 2. Tambahkan pengecekan kepemilikan HD di sini
-      const itemHdId = String(item.id_telegram_hd || '');
-      const itemHdName = (item.nama_hd || '').toLowerCase();
-      
-      // Cek apakah tiket ini milik HD yang sedang login (berdasarkan ID Telegram atau Nama HD)
-      const isMyTicket = (currentUserId && itemHdId === currentUserId) || 
-                         (currentUserName && itemHdName.includes(currentUserName));
-
-      if ((status === 'CLOSED' || status === 'SELESAI') && isMyTicket) {
+      if (status === 'CLOSED' || status === 'SELESAI') {
         const wClose = item.timestamp_close || item.waktu_close;
         const dClose = safeDateParse(wClose);
         return !isFiltered || (dClose && dClose >= filterStart && dClose <= filterEnd);
@@ -1133,10 +1097,6 @@ const closedItems = Object.keys(globalPermintaanData)
       return false;
     })
     .reverse();
-
-
-
-      
 
   closedItems.forEach(item => {
     const key = item.key;
