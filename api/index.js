@@ -63,34 +63,51 @@ function extractFileId(message) {
 }
 
 // Helper untuk mencari ID Tiket berdasarkan message_id yang di-reply
+// Helper untuk mencari ID Tiket berdasarkan message_id yang di-reply
 async function findTicketIdFromReply(replyMessage) {
   const targetMsgId = String(replyMessage.message_id);
 
-  // 1. Cek di tabel permintaan berdasarkan message_id
-  const permintaanQuery = query(ref(db, 'permintaan'), orderByChild('message_id'), equalTo(targetMsgId));
-  const snapPermintaan = await get(permintaanQuery);
+  try {
+    // 1. Cek di tabel 'permintaan' berdasarkan message_id
+    const permintaanQuery = query(ref(db, 'permintaan'), orderByChild('message_id'), equalTo(targetMsgId));
+    const snapPermintaan = await get(permintaanQuery);
 
-  if (snapPermintaan.exists()) {
-    const data = snapPermintaan.val();
-    const firstKey = Object.keys(data)[0];
-    return data[firstKey].tiket_id || firstKey;
-  }
+    if (snapPermintaan.exists()) {
+      const data = snapPermintaan.val();
+      const firstKey = Object.keys(data)[0];
+      return data[firstKey].tiket_id || firstKey;
+    }
 
-  // 2. Jika tidak ada di permintaan, cek di tabel diskusi berdasarkan message_id
-  const diskusiQuery = query(ref(db, 'diskusi'), orderByChild('message_id'), equalTo(targetMsgId));
-  const snapDiskusi = await get(diskusiQuery);
+    // 2. Cek di tabel 'diskusi' berdasarkan message_id
+    const diskusiQuery = query(ref(db, 'diskusi'), orderByChild('message_id'), equalTo(targetMsgId));
+    const snapDiskusi = await get(diskusiQuery);
 
-  if (snapDiskusi.exists()) {
-    const data = snapDiskusi.val();
-    const firstKey = Object.keys(data)[0];
-    return data[firstKey].id_tiket;
-  }
+    if (snapDiskusi.exists()) {
+      const data = snapDiskusi.val();
+      const firstKey = Object.keys(data)[0];
+      return data[firstKey].id_tiket;
+    }
 
-  // 3. Fallback: Ekstrak Tiket ID jika di dalam teks balasan ada format ID Tiket (TK-XXXX...)
-  const textInReply = replyMessage.text || replyMessage.caption || '';
-  const matchTiket = textInReply.match(/TK-\d{8}-\d{6}-\d+-\d+/);
-  if (matchTiket) {
-    return matchTiket[0];
+    // 3. PENCARIAN ALTERNATIF (Manual Scan jika Index Firebase belum/gagal terpasang)
+    const snapAllPermintaan = await get(ref(db, 'permintaan'));
+    if (snapAllPermintaan.exists()) {
+      const allData = snapAllPermintaan.val();
+      for (const key in allData) {
+        if (String(allData[key].message_id) === targetMsgId) {
+          return allData[key].tiket_id || key;
+        }
+      }
+    }
+
+    // 4. FALLBACK REGEX: Ekstrak ID Tiket langsung dari isi teks pesan yang di-reply
+    const textInReply = replyMessage.text || replyMessage.caption || '';
+    const matchTiket = textInReply.match(/TK-\d{8}-\d{6}-\d+-\d+/);
+    if (matchTiket) {
+      return matchTiket[0];
+    }
+
+  } catch (err) {
+    console.error("Error pada findTicketIdFromReply:", err);
   }
 
   return null;
