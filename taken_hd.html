@@ -647,125 +647,139 @@
 
     // ==================== 3. RENDER TABEL OPEN ==================== //
     function renderOpenOrders() {
-      const tbody = document.getElementById('tabelOpenOrder');
-      tbody.innerHTML = '';
+  const tbody = document.getElementById('tabelOpenOrder');
+  tbody.innerHTML = '';
 
-      let openCount = 0;
-      Object.keys(globalPermintaanData).forEach(key => {
-        const item = globalPermintaanData[key];
-        const status = (item.status || 'OPEN').toUpperCase();
+  // Mengubah objek Firebase ke array lalu dibalik (.reverse()) agar data terbaru ada di atas
+  const openItems = Object.keys(globalPermintaanData)
+    .map(key => ({ key, ...globalPermintaanData[key] }))
+    .filter(item => {
+      const status = (item.status || 'OPEN').toUpperCase();
+      return status === 'OPEN' || status === '';
+    })
+    .reverse(); 
 
-        if (status === 'OPEN' || status === '') {
-          openCount++;
-          const tId = item.tiket_id || item.id_tiket || key;
-          const namaTeknisi = item.nama_teknisi || item.username_teknisi || item.nama || '-';
-          const pesanFull = item.pesan || item.permintaan || item.deskripsi || '-';
-          const kategori = item.kategori_pekerjaan || item.kategori || '';
-          const fileId = item.id_file || item.foto || item.gambar || '';
+  openItems.forEach(item => {
+    const key = item.key;
+    const tId = item.tiket_id || item.id_tiket || key;
+    const namaTeknisi = item.nama_teknisi || item.username_teknisi || item.nama || '-';
+    const pesanFull = item.pesan || item.permintaan || item.deskripsi || '-';
+    const kategori = item.kategori_pekerjaan || item.kategori || '';
+    const fileId = item.id_file || item.foto || item.gambar || '';
 
-          let fileElement = '<span class="text-muted small">-</span>';
-          if (fileId && fileId.startsWith('data:image')) {
-            fileElement = `<img src="${fileId}" class="img-thumbnail-custom btn-zoom-src" data-img="${fileId}">`;
-          } else if (fileId) {
-            fileElement = `<button class="btn btn-sm btn-outline-info btn-zoom-src" data-img="${fileId}"><i class="fa-solid fa-image"></i></button>`;
-          }
-
-          tbody.insertAdjacentHTML('beforeend', `
-            <tr>
-              <td><code>${tId}</code></td>
-              <td class="fw-semibold">${namaTeknisi}</td>
-              <td><div class="msg-full-text">${pesanFull}</div></td>
-              <td class="text-center">${fileElement}</td>
-              <td>
-                <select class="form-select form-select-sm select-kategori" data-key="${key}">
-                  <option value="" ${!kategori ? 'selected' : ''}>-- Pilih --</option>
-                  <option value="Gangguan Router" ${kategori === 'Gangguan Router' ? 'selected' : ''}>Gangguan Router</option>
-                  <option value="Kabel Putus" ${kategori === 'Kabel Putus' ? 'selected' : ''}>Kabel Putus</option>
-                  <option value="Reset ODP" ${kategori === 'Reset ODP' ? 'selected' : ''}>Reset ODP</option>
-                  <option value="Setting User" ${kategori === 'Setting User' ? 'selected' : ''}>Setting User</option>
-                </select>
-              </td>
-              <td><span class="badge bg-danger">OPEN</span></td>
-              <td class="text-center">
-                <div class="btn-group btn-group-sm">
-                  <button class="btn btn-outline-secondary btn-detail-tiket" data-key="${key}" title="Detail Tiket"><i class="fa-solid fa-eye"></i></button>
-                  <button class="btn btn-primary btn-take-order" data-key="${key}" title="Take Order"><i class="fa-solid fa-hand-pointer me-1"></i> Take</button>
-                </div>
-              </td>
-            </tr>
-          `);
-        }
-      });
-
-      document.getElementById('openCountBadge').innerText = `${openCount} Tiket`;
-      if (openCount === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Tidak ada tiket open.</td></tr>`;
-      }
-
-      bindOrderEvents();
+    let fileElement = '<span class="text-muted small">-</span>';
+    if (fileId && fileId.startsWith('data:image')) {
+      fileElement = `<img src="${fileId}" class="img-thumbnail-custom btn-zoom-src" data-img="${fileId}">`;
+    } else if (fileId) {
+      fileElement = `<button class="btn btn-sm btn-outline-info btn-zoom-src" data-img="${fileId}"><i class="fa-solid fa-image"></i></button>`;
     }
+
+    tbody.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td><code>${tId}</code></td>
+        <td class="fw-semibold">${namaTeknisi}</td>
+        <td><div class="msg-full-text">${pesanFull}</div></td>
+        <td class="text-center">${fileElement}</td>
+        <td>
+          <select class="form-select form-select-sm select-kategori" data-key="${key}">
+            <option value="" ${!kategori ? 'selected' : ''}>-- Pilih --</option>
+            <option value="Gangguan Router" ${kategori === 'Gangguan Router' ? 'selected' : ''}>Gangguan Router</option>
+            <option value="Kabel Putus" ${kategori === 'Kabel Putus' ? 'selected' : ''}>Kabel Putus</option>
+            <option value="Reset ODP" ${kategori === 'Reset ODP' ? 'selected' : ''}>Reset ODP</option>
+            <option value="Setting User" ${kategori === 'Setting User' ? 'selected' : ''}>Setting User</option>
+          </select>
+        </td>
+        <td><span class="badge bg-danger">OPEN</span></td>
+        <td class="text-center">
+          <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-secondary btn-detail-tiket" data-key="${key}" title="Detail Tiket"><i class="fa-solid fa-eye"></i></button>
+            <button class="btn btn-primary btn-take-order" data-key="${key}" title="Take Order"><i class="fa-solid fa-hand-pointer me-1"></i> Take</button>
+          </div>
+        </td>
+      </tr>
+    `);
+  });
+
+  // Update badge di header tabel dan di menu tab
+  const totalOpen = openItems.length;
+  document.getElementById('openCountBadge').innerText = `${totalOpen} Tiket`;
+  document.getElementById('tabOpenBadge').innerText = totalOpen;
+
+  if (totalOpen === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Tidak ada tiket open.</td></tr>`;
+  }
+
+  bindOrderEvents();
+}
 
     // ==================== 4. RENDER TABEL DIKERJAKAN ==================== //
     function renderDikerjakanOrders() {
-      const tbody = document.getElementById('tabelDikerjakanOrder');
-      tbody.innerHTML = '';
+  const tbody = document.getElementById('tabelDikerjakanOrder');
+  tbody.innerHTML = '';
 
-      let count = 0;
-      Object.keys(globalPermintaanData).forEach(key => {
-        const item = globalPermintaanData[key];
-        const status = (item.status || '').toUpperCase();
+  // Mengubah objek Firebase ke array lalu dibalik (.reverse()) agar data terbaru ada di atas
+  const dikerjakanItems = Object.keys(globalPermintaanData)
+    .map(key => ({ key, ...globalPermintaanData[key] }))
+    .filter(item => {
+      const status = (item.status || '').toUpperCase();
+      return status === 'DIKERJAKAN' || status === 'PROCESS' || status === 'PROGRESS';
+    })
+    .reverse();
 
-        if (status === 'DIKERJAKAN' || status === 'PROCESS' || status === 'PROGRESS') {
-          count++;
-          const tId = item.tiket_id || item.id_tiket || key;
-          const namaTeknisi = item.nama_teknisi || item.username_teknisi || item.nama || '-';
-          const pesanFull = item.pesan || item.permintaan || item.deskripsi || '-';
-          const kategori = item.kategori_pekerjaan || item.kategori || '';
-          const namaHD = item.nama_hd || item.hd_nama || '-';
-          const fileId = item.id_file || item.foto || item.gambar || '';
+  dikerjakanItems.forEach(item => {
+    const key = item.key;
+    const tId = item.tiket_id || item.id_tiket || key;
+    const namaTeknisi = item.nama_teknisi || item.username_teknisi || item.nama || '-';
+    const pesanFull = item.pesan || item.permintaan || item.deskripsi || '-';
+    const kategori = item.kategori_pekerjaan || item.kategori || '';
+    const namaHD = item.nama_hd || item.hd_nama || '-';
+    const fileId = item.id_file || item.foto || item.gambar || '';
 
-          let fileElement = '<span class="text-muted small">-</span>';
-          if (fileId && fileId.startsWith('data:image')) {
-            fileElement = `<img src="${fileId}" class="img-thumbnail-custom btn-zoom-src" data-img="${fileId}">`;
-          } else if (fileId) {
-            fileElement = `<button class="btn btn-sm btn-outline-info btn-zoom-src" data-img="${fileId}"><i class="fa-solid fa-image"></i></button>`;
-          }
-
-          tbody.insertAdjacentHTML('beforeend', `
-            <tr>
-              <td><code>${tId}</code></td>
-              <td class="fw-semibold">${namaTeknisi}</td>
-              <td><div class="msg-full-text">${pesanFull}</div></td>
-              <td class="text-center">${fileElement}</td>
-              <td>
-                <select class="form-select form-select-sm select-kategori" data-key="${key}">
-                  <option value="" ${!kategori ? 'selected' : ''}>-- Pilih --</option>
-                  <option value="Gangguan Router" ${kategori === 'Gangguan Router' ? 'selected' : ''}>Gangguan Router</option>
-                  <option value="Kabel Putus" ${kategori === 'Kabel Putus' ? 'selected' : ''}>Kabel Putus</option>
-                  <option value="Reset ODP" ${kategori === 'Reset ODP' ? 'selected' : ''}>Reset ODP</option>
-                  <option value="Setting User" ${kategori === 'Setting User' ? 'selected' : ''}>Setting User</option>
-                </select>
-              </td>
-              <td><span class="badge bg-warning text-dark">${namaHD}</span></td>
-              <td class="text-center">
-                <div class="btn-group btn-group-sm">
-                  <button class="btn btn-outline-secondary btn-detail-tiket" data-key="${key}" title="Detail Tiket"><i class="fa-solid fa-eye"></i></button>
-                  <button class="btn btn-outline-success btn-diskusi" data-key="${key}" title="Diskusi / Chat"><i class="fa-solid fa-comments"></i></button>
-                  <button class="btn btn-outline-danger btn-close-ticket" data-key="${key}" title="Selesaikan"><i class="fa-solid fa-check"></i></button>
-                </div>
-              </td>
-            </tr>
-          `);
-        }
-      });
-
-      document.getElementById('dikerjakanCountBadge').innerText = `${count} Tiket`;
-      if (count === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Tidak ada tiket yang sedang dikerjakan.</td></tr>`;
-      }
-
-      bindOrderEvents();
+    let fileElement = '<span class="text-muted small">-</span>';
+    if (fileId && fileId.startsWith('data:image')) {
+      fileElement = `<img src="${fileId}" class="img-thumbnail-custom btn-zoom-src" data-img="${fileId}">`;
+    } else if (fileId) {
+      fileElement = `<button class="btn btn-sm btn-outline-info btn-zoom-src" data-img="${fileId}"><i class="fa-solid fa-image"></i></button>`;
     }
+
+    tbody.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td><code>${tId}</code></td>
+        <td class="fw-semibold">${namaTeknisi}</td>
+        <td><div class="msg-full-text">${pesanFull}</div></td>
+        <td class="text-center">${fileElement}</td>
+        <td>
+          <select class="form-select form-select-sm select-kategori" data-key="${key}">
+            <option value="" ${!kategori ? 'selected' : ''}>-- Pilih --</option>
+            <option value="Gangguan Router" ${kategori === 'Gangguan Router' ? 'selected' : ''}>Gangguan Router</option>
+            <option value="Kabel Putus" ${kategori === 'Kabel Putus' ? 'selected' : ''}>Kabel Putus</option>
+            <option value="Reset ODP" ${kategori === 'Reset ODP' ? 'selected' : ''}>Reset ODP</option>
+            <option value="Setting User" ${kategori === 'Setting User' ? 'selected' : ''}>Setting User</option>
+          </select>
+        </td>
+        <td><span class="badge bg-warning text-dark">${namaHD}</span></td>
+        <td class="text-center">
+          <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-secondary btn-detail-tiket" data-key="${key}" title="Detail Tiket"><i class="fa-solid fa-eye"></i></button>
+            <button class="btn btn-outline-success btn-diskusi" data-key="${key}" title="Diskusi / Chat"><i class="fa-solid fa-comments"></i></button>
+            <button class="btn btn-outline-danger btn-close-ticket" data-key="${key}" title="Selesaikan"><i class="fa-solid fa-check"></i></button>
+          </div>
+        </td>
+      </tr>
+    `);
+  });
+
+  // Update badge di header tabel dan di menu tab
+  const totalDikerjakan = dikerjakanItems.length;
+  document.getElementById('dikerjakanCountBadge').innerText = `${totalDikerjakan} Tiket`;
+  document.getElementById('tabDikerjakanBadge').innerText = totalDikerjakan;
+
+  if (totalDikerjakan === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Tidak ada tiket yang sedang dikerjakan.</td></tr>`;
+  }
+
+  bindOrderEvents();
+}
 
     // Bind Event Listeners
     function bindOrderEvents() {
@@ -922,65 +936,73 @@
     });
 
     function renderTiketClosed(isFiltered = false) {
-      const tbody = document.getElementById('tabelTiketClosed');
-      tbody.innerHTML = '';
+  const tbody = document.getElementById('tabelTiketClosed');
+  tbody.innerHTML = '';
 
-      const now = new Date();
-      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-      const yesterdayStart = new Date(todayStart);
-      yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+  const yesterdayStart = new Date(todayStart);
+  yesterdayStart.setDate(yesterdayStart.getDate() - 1);
 
-      let filterStart = yesterdayStart;
-      let filterEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+  let filterStart = yesterdayStart;
+  let filterEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
 
-      if (isFiltered) {
-        const sVal = document.getElementById('closedStartDate').value;
-        const eVal = document.getElementById('closedEndDate').value;
-        if (sVal) filterStart = new Date(sVal + 'T00:00:00');
-        if (eVal) filterEnd = new Date(eVal + 'T23:59:59');
+  if (isFiltered) {
+    const sVal = document.getElementById('closedStartDate').value;
+    const eVal = document.getElementById('closedEndDate').value;
+    if (sVal) filterStart = new Date(sVal + 'T00:00:00');
+    if (eVal) filterEnd = new Date(eVal + 'T23:59:59');
+  }
+
+  // Filter dan balik urutan (.reverse())
+  const closedItems = Object.keys(globalPermintaanData)
+    .map(key => ({ key, ...globalPermintaanData[key] }))
+    .filter(item => {
+      const status = (item.status || '').toUpperCase();
+      if (status === 'CLOSED' || status === 'SELESAI') {
+        const wClose = item.timestamp_close || item.waktu_close;
+        const dClose = safeDateParse(wClose);
+        return !isFiltered || (dClose && dClose >= filterStart && dClose <= filterEnd);
       }
+      return false;
+    })
+    .reverse();
 
-      let closedCount = 0;
-      Object.keys(globalPermintaanData).forEach(key => {
-        const item = globalPermintaanData[key];
-        const status = (item.status || '').toUpperCase();
+  closedItems.forEach(item => {
+    const key = item.key;
+    const tId = item.tiket_id || item.id_tiket || key;
+    const namaTeknisi = item.nama_teknisi || item.username_teknisi || '-';
+    const namaHD = item.nama_hd || item.hd_nama || '-';
+    const kategori = item.kategori_pekerjaan || item.kategori || '-';
+    const wClose = item.timestamp_close || item.waktu_close;
 
-        if (status === 'CLOSED' || status === 'SELESAI') {
-          const wClose = item.timestamp_close || item.waktu_close;
-          const dClose = safeDateParse(wClose);
+    tbody.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td><code>${tId}</code></td>
+        <td>${namaTeknisi}</td>
+        <td><span class="badge bg-secondary">${namaHD}</span></td>
+        <td><span class="badge bg-info text-dark">${kategori}</span></td>
+        <td class="small">${wClose || '-'}</td>
+        <td class="text-center">
+          <button class="btn btn-sm btn-outline-secondary btn-detail-tiket" data-key="${key}">
+            <i class="fa-solid fa-eye me-1"></i> Detail
+          </button>
+        </td>
+      </tr>
+    `);
+  });
 
-          if (!isFiltered || (dClose && dClose >= filterStart && dClose <= filterEnd)) {
-            closedCount++;
-            const tId = item.tiket_id || item.id_tiket || key;
-            const namaTeknisi = item.nama_teknisi || item.username_teknisi || '-';
-            const namaHD = item.nama_hd || item.hd_nama || '-';
-            const kategori = item.kategori_pekerjaan || item.kategori || '-';
+  // Update badge di header tabel dan di menu tab
+  const totalClosed = closedItems.length;
+  document.getElementById('closedCountBadge').innerText = `${totalClosed} Tiket`;
+  document.getElementById('tabClosedBadge').innerText = totalClosed;
 
-            tbody.insertAdjacentHTML('beforeend', `
-              <tr>
-                <td><code>${tId}</code></td>
-                <td>${namaTeknisi}</td>
-                <td><span class="badge bg-secondary">${namaHD}</span></td>
-                <td><span class="badge bg-info text-dark">${kategori}</span></td>
-                <td class="small">${wClose || '-'}</td>
-                <td class="text-center">
-                  <button class="btn btn-sm btn-outline-secondary btn-detail-tiket" data-key="${key}">
-                    <i class="fa-solid fa-eye me-1"></i> Detail
-                  </button>
-                </td>
-              </tr>
-            `);
-          }
-        }
-      });
+  if (totalClosed === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada tiket closed.</td></tr>`;
+  }
 
-      document.getElementById('closedCountBadge').innerText = `${closedCount} Tiket`;
-      if (closedCount === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada tiket closed.</td></tr>`;
-      }
-
-      bindOrderEvents();
-    }
+  bindOrderEvents();
+}
 
     // ==================== 6. DISKUSI CHAT & TELEGRAM API ==================== //
     function listenToDiskusiChat(tiketId) {
