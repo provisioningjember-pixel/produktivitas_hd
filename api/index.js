@@ -112,11 +112,11 @@ app.post('/api/webhook', async (req, res) => {
       const replyMessage = 
         `✅ <b>Tiket Permintaan Berhasil Dibuat!</b>\n\n` +
         `🎫 <b>Ticket ID:</b> <code>${ticketId}</code>\n` +
-        `🏷️ <b>Segmen:</b> <code>${segmen}</code>\n` +
-        `👤 <b>Teknisi:</b> ${safeNama} (${usernameTeknisi || idTelegramTeknisi})\n` +
-        `📌 <b>Status:</b> <code>OPEN</code>\n` +
-        `📷 <b>Lampiran Foto:</b> ${fileId ? 'Ada' : 'Tidak ada'}\n\n` +
-        `📝 <b>Pesan:</b>\n<i>${safePesan}</i>\n\n` +
+        //`🏷️ <b>Segmen:</b> <code>${segmen}</code>\n` +
+        //`👤 <b>Teknisi:</b> ${safeNama} (${usernameTeknisi || idTelegramTeknisi})\n` +
+        //`📌 <b>Status:</b> <code>OPEN</code>\n` +
+        //`📷 <b>Lampiran Foto:</b> ${fileId ? 'Ada' : 'Tidak ada'}\n\n` +
+        //`📝 <b>Pesan:</b>\n<i>${safePesan}</i>\n\n` +
         `<i>Tim Helpdesk akan segera merespon tiket ini.</i>`;
 
       await bot.sendMessage(message.chat.id, replyMessage, {
