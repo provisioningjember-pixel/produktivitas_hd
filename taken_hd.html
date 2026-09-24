@@ -155,28 +155,32 @@
     <!-- Content -->
     <div class="container-fluid py-4 px-4">
       <!-- 4 NAVIGATION TABS -->
-      <ul class="nav nav-tabs mb-4" id="mainTabs" role="tablist">
-        <li class="nav-item">
-          <button class="nav-link active fw-semibold" id="tab-dashboard-btn" data-bs-toggle="tab" data-bs-target="#tab-dashboard" type="button">
-            <i class="fa-solid fa-chart-line me-2"></i>Dashboard Analytics
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link fw-semibold" id="tab-open-btn" data-bs-toggle="tab" data-bs-target="#tab-open" type="button">
-            <i class="fa-solid fa-folder-open me-2"></i>Open
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link fw-semibold" id="tab-dikerjakan-btn" data-bs-toggle="tab" data-bs-target="#tab-dikerjakan" type="button">
-            <i class="fa-solid fa-spinner me-2"></i>Dikerjakan
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link fw-semibold" id="tab-closed-btn" data-bs-toggle="tab" data-bs-target="#tab-closed" type="button">
-            <i class="fa-solid fa-box-archive me-2"></i>Tiket Closed
-          </button>
-        </li>
-      </ul>
+      <!-- 4 NAVIGATION TABS DENGAN BADGE JUMLAH TIKET -->
+<ul class="nav nav-tabs mb-4" id="mainTabs" role="tablist">
+  <li class="nav-item">
+    <button class="nav-link active fw-semibold" id="tab-dashboard-btn" data-bs-toggle="tab" data-bs-target="#tab-dashboard" type="button">
+      <i class="fa-solid fa-chart-line me-2"></i>Dashboard Analytics
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link fw-semibold" id="tab-open-btn" data-bs-toggle="tab" data-bs-target="#tab-open" type="button">
+      <i class="fa-solid fa-folder-open me-2"></i>Open 
+      <span class="badge bg-danger ms-1" id="tabOpenBadge">0</span>
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link fw-semibold" id="tab-dikerjakan-btn" data-bs-toggle="tab" data-bs-target="#tab-dikerjakan" type="button">
+      <i class="fa-solid fa-spinner me-2"></i>Dikerjakan 
+      <span class="badge bg-warning text-dark ms-1" id="tabDikerjakanBadge">0</span>
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link fw-semibold" id="tab-closed-btn" data-bs-toggle="tab" data-bs-target="#tab-closed" type="button">
+      <i class="fa-solid fa-box-archive me-2"></i>Tiket Closed 
+      <span class="badge bg-success ms-1" id="tabClosedBadge">0</span>
+    </button>
+  </li>
+</ul>
 
       <div class="tab-content" id="mainTabsContent">
         <!-- TAB 1: DASHBOARD ANALYTICS -->
