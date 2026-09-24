@@ -1074,21 +1074,31 @@ const dikerjakanItems = Object.keys(globalPermintaanData)
 }
 
     // ==================== 5. RENDER TABEL TIKET CLOSED ==================== //
-    document.getElementById('btnFilterClosed').addEventListener('click', () => renderTiketClosed(true));
-    document.getElementById('btnResetFilterClosed').addEventListener('click', () => {
-      document.getElementById('closedStartDate').value = '';
-      document.getElementById('closedEndDate').value = '';
-      renderTiketClosed(false);
-    });
+document.getElementById('btnFilterClosed').addEventListener('click', () => renderTiketClosed(true));
+document.getElementById('btnResetFilterClosed').addEventListener('click', () => {
+  document.getElementById('closedStartDate').value = '';
+  document.getElementById('closedEndDate').value = '';
+  renderTiketClosed(false);
+});
 
-  function renderTiketClosed(isFiltered = false) {
+function renderTiketClosed(isFiltered = false) {
   const tbody = document.getElementById('tabelTiketClosed');
   tbody.innerHTML = '';
 
-  // 1. Ambil data user yang sedang login dari Session / LocalStorage / Global Variable
-  const currentUser = JSON.parse(sessionStorage.getItem('user_hd')) || {};
-  const currentUserId = String(currentUser.id_telegram || '');
-  const currentUserName = (currentUser.nama || '').toLowerCase();
+  // 1. Dapatkan objek user yang sedang login dari Session / LocalStorage / Window variable
+  let currentUser = {};
+  try {
+    currentUser = JSON.parse(sessionStorage.getItem('user_hd')) || 
+                  JSON.parse(localStorage.getItem('user_hd')) || 
+                  JSON.parse(sessionStorage.getItem('user')) || 
+                  window.currentUser || {};
+  } catch (e) {
+    console.error("Gagal membaca data session user login:", e);
+  }
+
+  // Ambil ID Telegram & Nama HD yang login
+  const currentUserId = String(currentUser.id_telegram || currentUser.id || '').trim();
+  const currentUserName = String(currentUser.nama || currentUser.nama_hd || currentUser.name || '').toLowerCase().trim();
 
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
@@ -1111,14 +1121,28 @@ const dikerjakanItems = Object.keys(globalPermintaanData)
     .filter(item => {
       const status = (item.status || '').toUpperCase();
       
-      // 2. Cek kepemilikan tiket berdasarkan ID Telegram atau Nama HD
-      const itemHdId = String(item.id_telegram_hd || '');
-      const itemHdName = (item.nama_hd || item.hd_nama || '').toLowerCase();
-      
-      const isMyTicket = (currentUserId && itemHdId === currentUserId) || 
-                         (currentUserName && itemHdName.includes(currentUserName));
+      // 2. PENGECEKAN KEPEMILIKAN TIKET OLEH USER HD LOGIN
+      const itemHdId = String(item.id_telegram_hd || item.id_hd || '').trim();
+      const itemHdName = String(item.nama_hd || item.hd_nama || '').toLowerCase().trim();
 
-      // 3. Gabungkan pengecekan Status, User Login, dan Filter Tanggal
+      let isMyTicket = false;
+
+      // Opsi A: Cocokkan ID Telegram HD
+      if (currentUserId && itemHdId && currentUserId === itemHdId) {
+        isMyTicket = true;
+      } 
+      // Opsi B: Cocokkan Nama HD (Pencocokan Fleksibel)
+      else if (currentUserName && itemHdName) {
+        const cleanLoginName = currentUserName.replace(/[^a-z0-9]/g, '');
+        const cleanItemName = itemHdName.replace(/[^a-z0-9]/g, '');
+        
+        // Pencocokan substring atau pencocokan kata utama nama
+        isMyTicket = cleanItemName.includes(cleanLoginName) || 
+                     cleanLoginName.includes(cleanItemName) ||
+                     currentUserName.split(' ').some(word => word.length > 2 && itemHdName.includes(word));
+      }
+
+      // 3. Gabungkan Status CLOSED/SELESAI + User Login + Filter Tanggal
       if ((status === 'CLOSED' || status === 'SELESAI') && isMyTicket) {
         const wClose = item.timestamp_close || item.waktu_close;
         const dClose = safeDateParse(wClose);
@@ -1152,13 +1176,17 @@ const dikerjakanItems = Object.keys(globalPermintaanData)
     `);
   });
 
-  // Update badge di header tabel dan di menu tab otomatis sesuai filter user login
+  // Update badge di header tabel dan di menu tab
   const totalClosed = closedItems.length;
-  document.getElementById('closedCountBadge').innerText = `${totalClosed} Tiket`;
-  document.getElementById('tabClosedBadge').innerText = totalClosed;
+  if (document.getElementById('closedCountBadge')) {
+    document.getElementById('closedCountBadge').innerText = `${totalClosed} Tiket`;
+  }
+  if (document.getElementById('tabClosedBadge')) {
+    document.getElementById('tabClosedBadge').innerText = totalClosed;
+  }
 
   if (totalClosed === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada tiket closed.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada tiket closed untuk akun Anda.</td></tr>`;
   }
 
   bindOrderEvents();
