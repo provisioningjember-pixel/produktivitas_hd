@@ -647,23 +647,36 @@
 
     
     
-    function getTelegramImageUrl(fileId) {
+ // HELPER ASYNC UNTUK MENGAMBIL URL GAMBAR TELEGRAM
+async function getTelegramImageUrl(fileId) {
   if (!fileId) return null;
-  
-  // Jika fileId sudah berupa URL langsung atau data Base64
   if (fileId.startsWith('http') || fileId.startsWith('data:image')) {
     return fileId;
   }
   
-  // Otomatis mengambil variabel token yang sudah ada di atas
-  // (Pastikan nama variabelnya sesuai, misal: TELEGRAM_BOT_TOKEN atau BOT_TOKEN)
   const token = typeof TELEGRAM_BOT_TOKEN !== 'undefined' ? TELEGRAM_BOT_TOKEN : (typeof BOT_TOKEN !== 'undefined' ? BOT_TOKEN : '');
-
-  if (token) {
-    return `https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`;
+  if (!token) {
+    alert("Token Bot Telegram belum terpasang di variabel Javascript!");
+    return null;
   }
-  
-  return null;
+
+  try {
+    // Step 1: Dapatkan file_path dari Telegram API
+    const response = await fetch(`https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`);
+    const data = await response.json();
+    
+    if (data.ok && data.result.file_path) {
+      // Step 2: Hasilkan Link Gambar Langsung
+      return `https://api.telegram.org/file/bot${token}/${data.result.file_path}`;
+    } else {
+      alert("Gagal mengambil file dari Telegram. File mungkin sudah kadaluwarsa.");
+      return null;
+    }
+  } catch (err) {
+    console.error("Error Telegram API:", err);
+    alert("Gagal terhubung ke Telegram API.");
+    return null;
+  }
 }
     
     
@@ -815,149 +828,190 @@
 
     // Bind Event Listeners
     function bindOrderEvents() {
-      // Zoom
-      document.querySelectorAll('.btn-zoom-src').forEach(img => {
-        img.onclick = (e) => {
-          const imgSrc = e.currentTarget.getAttribute('data-img') || e.currentTarget.src;
-          document.getElementById('zoomedImageSrc').src = imgSrc;
-          modalZoom.show();
-        };
-      });
+  // 1. ZOOM GAMBAR (UNTUK ELEMENT DENGAN CLASS .btn-zoom-src)
+  document.querySelectorAll('.btn-zoom-src').forEach(img => {
+    img.onclick = (e) => {
+      const imgSrc = e.currentTarget.getAttribute('data-img') || e.currentTarget.src;
+      document.getElementById('zoomedImageSrc').src = imgSrc;
+      modalZoom.show();
+    };
+  });
 
-      // Detail Tiket
-      document.querySelectorAll('.btn-detail-tiket').forEach(btn => {
-        btn.onclick = (e) => {
-          const key = e.currentTarget.getAttribute('data-key');
-          const item = globalPermintaanData[key];
+  // 2. FETCH & TAMPILKAN GAMBAR DARI TELEGRAM FILE_ID (Tabel & Detail)
+  document.querySelectorAll('.btn-fetch-telegram-img').forEach(btn => {
+    btn.onclick = async function () {
+      const fileId = this.getAttribute('data-fileid');
+      const oldHtml = this.innerHTML;
+
+      // Ubah tampilan tombol jadi animasi loading
+      this.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Memuat...`;
+      this.disabled = true;
+
+      // Panggil fungsi helper Telegram API (getTelegramImageUrl)
+      const imgUrl = await getTelegramImageUrl(fileId);
+
+      // Kembalikan tombol ke keadaan semula
+      this.innerHTML = oldHtml;
+      this.disabled = false;
+
+      if (imgUrl) {
+        document.getElementById('zoomedImageSrc').src = imgUrl;
+        modalZoom.show();
+      }
+    };
+  });
+
+  // 3. DETAIL TIKET
+  document.querySelectorAll('.btn-detail-tiket').forEach(btn => {
+    btn.onclick = async (e) => {
+      const key = e.currentTarget.getAttribute('data-key');
+      const item = globalPermintaanData[key];
+
+      document.getElementById('dtlTiketId').innerText = item.tiket_id || item.id_tiket || key;
+      document.getElementById('dtlTeknisi').innerText = item.nama_teknisi || item.username_teknisi || '-';
+      document.getElementById('dtlTelegramId').innerText = extractChatId(item, key) || '-';
+      document.getElementById('dtlStatus').innerText = item.status || 'OPEN';
+      document.getElementById('dtlKategori').innerText = item.kategori_pekerjaan || item.kategori || 'Belum dipilih';
+      document.getElementById('dtlWaktuMasuk').innerText = item.timestamp_created || item.waktu_masuk || '-';
+      document.getElementById('dtlWaktuClose').innerText = item.timestamp_close || '-';
+      document.getElementById('dtlPesan').innerText = item.pesan || item.permintaan || '-';
+
+      // Penanganan Gambar pada Modal Detail
+      const fileId = item.id_file || item.foto || item.gambar || item.file_id || '';
+      const lampiranContainer = document.getElementById('dtlLampiran');
+
+      if (fileId) {
+        if (fileId.startsWith('data:image') || fileId.startsWith('http')) {
+          lampiranContainer.innerHTML = `<img src="${fileId}" style="max-width: 100%; max-height: 250px; border-radius: 6px; cursor: pointer;" class="btn-zoom-src" data-img="${fileId}">`;
           
-          document.getElementById('dtlTiketId').innerText = item.tiket_id || item.id_tiket || key;
-          document.getElementById('dtlTeknisi').innerText = item.nama_teknisi || item.username_teknisi || '-';
-          document.getElementById('dtlTelegramId').innerText = extractChatId(item, key) || '-';
-          document.getElementById('dtlStatus').innerText = item.status || 'OPEN';
-          document.getElementById('dtlKategori').innerText = item.kategori_pekerjaan || item.kategori || 'Belum dipilih';
-          document.getElementById('dtlWaktuMasuk').innerText = item.timestamp_created || item.waktu_masuk || '-';
-          document.getElementById('dtlWaktuClose').innerText = item.timestamp_close || '-';
-          document.getElementById('dtlPesan').innerText = item.pesan || item.permintaan || '-';
+          // Binding klik zoom untuk gambar baru ini
+          lampiranContainer.querySelector('.btn-zoom-src').onclick = () => {
+            document.getElementById('zoomedImageSrc').src = fileId;
+            modalZoom.show();
+          };
+        } else {
+          // Jika berupa Telegram File ID
+          lampiranContainer.innerHTML = `
+            <button class="btn btn-sm btn-outline-primary btn-fetch-telegram-img" data-fileid="${fileId}">
+              <i class="fa-solid fa-image me-1"></i> Lihat Foto Lampiran
+            </button>`;
+          
+          // Binding klik untuk tombol baru ini
+          bindOrderEvents();
+        }
+      } else {
+        lampiranContainer.innerHTML = `<span class="text-muted">Tidak ada lampiran.</span>`;
+      }
 
-          const fileId = item.id_file || item.foto || item.gambar;
-          const lampiranContainer = document.getElementById('dtlLampiran');
-          if (fileId && fileId.startsWith('data:image')) {
-            lampiranContainer.innerHTML = `<img src="${fileId}" style="max-width: 100%; max-height: 250px; border-radius: 6px;" class="btn-zoom-src" data-img="${fileId}">`;
-          } else if (fileId) {
-            lampiranContainer.innerHTML = `<span class="text-muted">[File ID: ${fileId}]</span>`;
-          } else {
-            lampiranContainer.innerHTML = `<span class="text-muted">Tidak ada lampiran.</span>`;
-          }
+      modalDetail.show();
+    };
+  });
 
-          modalDetail.show();
-        };
-      });
+  // 4. TAKE ORDER
+  document.querySelectorAll('.btn-take-order').forEach(btn => {
+    btn.onclick = async (e) => {
+      const key = e.currentTarget.getAttribute('data-key');
+      const item = globalPermintaanData[key];
+      const targetChatId = extractChatId(item, key);
+      const tId = item.tiket_id || item.id_tiket || key;
+      const timestampTaken = new Date().toLocaleString('id-ID');
 
-      // Take Order
-      document.querySelectorAll('.btn-take-order').forEach(btn => {
-        btn.onclick = async (e) => {
-          const key = e.currentTarget.getAttribute('data-key');
-          const item = globalPermintaanData[key];
+      try {
+        await update(ref(db, `permintaan/${key}`), {
+          status: 'DIKERJAKAN',
+          id_telegram_hd: activeUser.id_telegram || '',
+          nama_hd: activeUser.nama || activeUser.nama_hd || activeUser.nik,
+          nik_hd: activeUser.nik || '',
+          timestamp_taken: timestampTaken
+        });
+
+        if (targetChatId) {
+          const textNotice = `<b>[TAKE ORDER]</b>\n\nTiket <code>${tId}</code> telah diambil dan sedang diproses oleh HD <b>${activeUser.nama || activeUser.nik}</b>.`;
+          sendTelegramReply(targetChatId, item.message_id, textNotice);
+        }
+
+        alert('Tiket berhasil diambil (Take Order)!');
+        bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-dikerjakan-btn')).show();
+      } catch (err) {
+        console.error(err);
+        alert('Gagal melakukan Take Order.');
+      }
+    };
+  });
+
+  // 5. CLOSE TICKET
+  document.querySelectorAll('.btn-close-ticket').forEach(btn => {
+    btn.onclick = async (e) => {
+      const key = e.currentTarget.getAttribute('data-key');
+      const item = globalPermintaanData[key];
+      const kategori = item.kategori_pekerjaan || item.kategori;
+      const tId = item.tiket_id || item.id_tiket || key;
+
+      if (!kategori) {
+        alert('Harap pilih Kategori Pekerjaan terlebih dahulu!');
+        return;
+      }
+
+      if (confirm(`Selesaikan tiket ${tId}?`)) {
+        const timestampClose = new Date().toLocaleString('id-ID');
+        try {
           const targetChatId = extractChatId(item, key);
-          const tId = item.tiket_id || item.id_tiket || key;
-          const timestampTaken = new Date().toLocaleString('id-ID');
 
-          try {
-            await update(ref(db, `permintaan/${key}`), {
-              status: 'DIKERJAKAN',
-              id_telegram_hd: activeUser.id_telegram || '',
-              nama_hd: activeUser.nama || activeUser.nama_hd || activeUser.nik,
-              nik_hd: activeUser.nik || '',
-              timestamp_taken: timestampTaken
-            });
+          await update(ref(db, `permintaan/${key}`), {
+            status: 'CLOSED',
+            timestamp_close: timestampClose
+          });
 
-            if (targetChatId) {
-              const textNotice = `<b>[TAKE ORDER]</b>\n\nTiket <code>${tId}</code> telah diambil dan sedang diproses oleh HD <b>${activeUser.nama || activeUser.nik}</b>.`;
-              sendTelegramReply(targetChatId, item.message_id, textNotice);
-            }
-
-            alert('Tiket berhasil diambil (Take Order)!');
-            bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-dikerjakan-btn')).show();
-          } catch (err) {
-            console.error(err);
-            alert('Gagal melakukan Take Order.');
-          }
-        };
-      });
-
-      // Close Ticket
-      document.querySelectorAll('.btn-close-ticket').forEach(btn => {
-        btn.onclick = async (e) => {
-          const key = e.currentTarget.getAttribute('data-key');
-          const item = globalPermintaanData[key];
-          const kategori = item.kategori_pekerjaan || item.kategori;
-          const tId = item.tiket_id || item.id_tiket || key;
-
-          if (!kategori) {
-            alert('Harap pilih Kategori Pekerjaan terlebih dahulu!');
-            return;
+          if (targetChatId) {
+            const pesanClose = `<b>[TIKET CLOSED]</b>\n\nTiket <code>${tId}</code> telah diselesaikan oleh HD <b>${activeUser.nama || activeUser.nik}</b>.`;
+            sendTelegramReply(targetChatId, item.message_id, pesanClose);
           }
 
-          if (confirm(`Selesaikan tiket ${tId}?`)) {
-            const timestampClose = new Date().toLocaleString('id-ID');
-            try {
-              const targetChatId = extractChatId(item, key);
+          push(ref(db, 'diskusi'), {
+            id_tiket: tId,
+            id_telegram: activeUser.id_telegram || '',
+            chat_id: targetChatId || "",
+            timestamp: timestampClose,
+            teks: `[CLOSED] Tiket diselesaikan oleh HD: ${activeUser.nama || activeUser.nik}`,
+            id_file: ""
+          });
 
-              await update(ref(db, `permintaan/${key}`), {
-                status: 'CLOSED',
-                timestamp_close: timestampClose
-              });
+          bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-closed-btn')).show();
+        } catch (error) {
+          console.error('Error Close Ticket:', error);
+          alert('Gagal menyelesaikan tiket!');
+        }
+      }
+    };
+  });
 
-              if (targetChatId) {
-                const pesanClose = `<b>[TIKET CLOSED]</b>\n\nTiket <code>${tId}</code> telah diselesaikan oleh HD <b>${activeUser.nama || activeUser.nik}</b>.`;
-                sendTelegramReply(targetChatId, item.message_id, pesanClose);
-              }
+  // 6. DISKUSI MODAL
+  document.querySelectorAll('.btn-diskusi').forEach(btn => {
+    btn.onclick = (e) => {
+      activeDiskusiTiketKey = e.currentTarget.getAttribute('data-key');
+      const item = globalPermintaanData[activeDiskusiTiketKey];
+      const tId = item.tiket_id || item.id_tiket || activeDiskusiTiketKey;
 
-              push(ref(db, 'diskusi'), {
-                id_tiket: tId,
-                id_telegram: activeUser.id_telegram || '',
-                chat_id: targetChatId || "",
-                timestamp: timestampClose,
-                teks: `[CLOSED] Tiket diselesaikan oleh HD: ${activeUser.nama || activeUser.nik}`,
-                id_file: ""
-              });
+      document.getElementById('diskusiTiketIdHeader').innerText = tId;
+      resetDiskusiForm();
+      modalDiskusi.show();
+      listenToDiskusiChat(tId);
+    };
+  });
 
-              bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-closed-btn')).show();
-            } catch (error) {
-              console.error('Error Close Ticket:', error);
-              alert('Gagal menyelesaikan tiket!');
-            }
-          }
-        };
-      });
-
-      // Diskusi Modal
-      document.querySelectorAll('.btn-diskusi').forEach(btn => {
-        btn.onclick = (e) => {
-          activeDiskusiTiketKey = e.currentTarget.getAttribute('data-key');
-          const item = globalPermintaanData[activeDiskusiTiketKey];
-          const tId = item.tiket_id || item.id_tiket || activeDiskusiTiketKey;
-          
-          document.getElementById('diskusiTiketIdHeader').innerText = tId;
-          resetDiskusiForm();
-          modalDiskusi.show();
-          listenToDiskusiChat(tId);
-        };
-      });
-
-      // Update Kategori Select
-      document.querySelectorAll('.select-kategori').forEach(select => {
-        select.onchange = async (e) => {
-          const key = e.currentTarget.getAttribute('data-key');
-          const value = e.target.value;
-          try {
-            await update(ref(db, `permintaan/${key}`), { kategori_pekerjaan: value });
-          } catch (error) {
-            console.error('Error update kategori:', error);
-          }
-        };
-      });
-    }
+  // 7. UPDATE KATEGORI SELECT
+  document.querySelectorAll('.select-kategori').forEach(select => {
+    select.onchange = async (e) => {
+      const key = e.currentTarget.getAttribute('data-key');
+      const value = e.target.value;
+      try {
+        await update(ref(db, `permintaan/${key}`), { kategori_pekerjaan: value });
+      } catch (error) {
+        console.error('Error update kategori:', error);
+      }
+    };
+  });
+}
 
     // ==================== 5. RENDER TABEL TIKET CLOSED ==================== //
     document.getElementById('btnFilterClosed').addEventListener('click', () => renderTiketClosed(true));
