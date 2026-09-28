@@ -1,215 +1,245 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CRUD Permintaan - Firebase RTDB Optimization</title>
-  <!-- Tailwind CSS -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRUD Permintaan - Firebase RTDB Optimized</title>
+  <!-- Tailwind CSS & FontAwesome -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    [v-cloak] { display: none; }
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      width: 18px;
+      height: 18px;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
 
-  <div class="max-w-7xl mx-auto px-4 py-6">
-    <!-- Header -->
-    <div class="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
-      <div>
-        <h1 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-database text-indigo-600 mr-2"></i>Data Permintaan</h1>
-        <p class="text-slate-500 text-sm mt-1">Sistem Pengelolaan Data Berbasis Firebase RTDB dengan Optimasi Pagination</p>
+  <!-- Top Navbar -->
+  <nav class="bg-slate-800 border-b border-slate-700 px-6 py-4 mb-6 shadow-md">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="bg-indigo-600 text-white p-2.5 rounded-lg font-bold">
+          <i class="fa-solid fa-database text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-white">CRUD Permintaan RTDB</h1>
+          <p class="text-xs text-slate-400">Optimized for Large Datasets & Rules Indexed</p>
+        </div>
       </div>
-      <button id="btnOpenCreateModal" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-lg text-sm flex items-center transition">
-        <i class="fa-solid fa-plus mr-2"></i>Tambah Permintaan
+      <button id="btnTambahData" class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow transition flex items-center gap-2">
+        <i class="fa-solid fa-plus"></i> Tambah Permintaan
       </button>
     </div>
+  </nav>
 
-    <!-- Filter & Direct Search Bar -->
-    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 justify-between items-center">
-      <!-- Search Specific Ticket ID -->
-      <form id="searchForm" class="flex items-center gap-2 w-full md:w-auto flex-1 max-w-md">
+  <main class="max-w-7xl mx-auto px-4">
+    <!-- Filter & Search Section -->
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-6 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+      <form id="formCari" class="flex items-center gap-2 w-full md:w-auto flex-1 max-w-md">
         <div class="relative w-full">
-          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-          <input type="text" id="searchInput" placeholder="Cari langsung Tiket ID (contoh: TKT-1001)..." 
-            class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input type="text" id="inputCariTiket" placeholder="Cari Tiket ID (contoh: TK-2026...)" class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
         </div>
-        <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white text-sm px-4 py-2 rounded-lg transition">
+        <button type="submit" class="bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2">
           Cari
+        </button>
+        <button type="button" id="btnResetCari" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm px-3 py-2 rounded-lg transition hidden" title="Reset Pencarian">
+          <i class="fa-solid fa-rotate-left"></i>
         </button>
       </form>
 
-      <!-- Page Size & Refresh -->
-      <div class="flex items-center gap-3">
-        <label class="text-xs font-medium text-slate-500">Baris per halaman:</label>
-        <select id="pageSizeSelect" class="border border-slate-300 rounded-lg text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-          <option value="10" selected>10</option>
-          <option value="25">25</option>
+      <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+        <label for="selectLimit" class="text-xs text-slate-400 font-medium">Baris per halaman:</label>
+        <select id="selectLimit" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+          <option value="10">10</option>
+          <option value="25" selected>25</option>
           <option value="50">50</option>
+          <option value="100">100</option>
         </select>
-        <button id="btnRefresh" class="border border-slate-300 hover:bg-slate-50 text-slate-600 px-3 py-1.5 rounded-lg text-sm transition" title="Muat Ulang Data Awal">
-          <i class="fa-solid fa-rotate-right"></i> Reset
-        </button>
       </div>
     </div>
 
-    <!-- Data Table Container -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <!-- Alert Container -->
+    <div id="alertBox" class="hidden mb-4 p-4 rounded-lg text-sm font-medium flex justify-between items-center">
+      <span id="alertMessage"></span>
+      <button onclick="document.getElementById('alertBox').classList.add('hidden')" class="text-slate-400 hover:text-white">&times;</button>
+    </div>
+
+    <!-- Data Table Card -->
+    <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-lg">
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse text-sm">
-          <thead>
-            <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase text-xs">
-              <th class="p-3">Tiket ID</th>
-              <th class="p-3">Status</th>
-              <th class="p-3">Kategori & Segmen</th>
-              <th class="p-3">Teknisi</th>
-              <th class="p-3">HD</th>
-              <th class="p-3">Waktu Dibuat</th>
-              <th class="p-3 text-center">Aksi</th>
+        <table class="w-full text-left text-sm text-slate-300">
+          <thead class="bg-slate-900/80 text-xs uppercase text-slate-400 border-b border-slate-700">
+            <tr>
+              <th class="px-4 py-3">Tiket ID</th>
+              <th class="px-4 py-3">Status</th>
+              <th class="px-4 py-3">Kategori / Segmen</th>
+              <th class="px-4 py-3">Teknisi</th>
+              <th class="px-4 py-3">HD</th>
+              <th class="px-4 py-3">Waktu Buat</th>
+              <th class="px-4 py-3 text-center">Aksi</th>
             </tr>
           </thead>
-          <tbody id="tableBody" class="divide-y divide-slate-100">
-            <!-- Loading Indicator -->
-            <tr id="loadingRow">
-              <td colspan="7" class="text-center py-12 text-slate-400">
-                <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2 text-indigo-600"></i>
-                <p>Memuat data...</p>
+          <tbody id="tableBody" class="divide-y divide-slate-700/60">
+            <tr>
+              <td colspan="7" class="text-center py-10 text-slate-500">
+                <i class="fa-solid fa-circle-notch fa-spin text-2xl text-indigo-500 mb-2"></i>
+                <p>Memuat data dari Firebase...</p>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- Pagination Footer Controls -->
-      <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-sm text-slate-600">
-        <div>
-          Halaman: <span id="currentPageDisplay" class="font-bold text-slate-800">1</span>
-        </div>
-        <div class="flex gap-2">
-          <button id="btnPrevPage" disabled class="px-3 py-1.5 bg-white border border-slate-300 rounded-md text-xs font-medium text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100">
-            <i class="fa-solid fa-chevron-left mr-1"></i> Sebelumnya
+      <!-- Pagination Footer -->
+      <div class="bg-slate-900/60 px-6 py-4 border-t border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <span class="text-xs text-slate-400" id="infoPaginasi">Menampilkan data...</span>
+        <div class="flex items-center gap-2">
+          <button id="btnPrevPage" class="bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed border border-slate-700 text-xs px-3 py-2 rounded-lg transition font-medium">
+            <i class="fa-solid fa-chevron-left mr-1"></i> Sebelum
           </button>
-          <button id="btnNextPage" disabled class="px-3 py-1.5 bg-white border border-slate-300 rounded-md text-xs font-medium text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100">
-            Berikutnya <i class="fa-solid fa-chevron-right ml-1"></i>
+          <button id="btnNextPage" class="bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed border border-slate-700 text-xs px-3 py-2 rounded-lg transition font-medium">
+            Selanjutnya <i class="fa-solid fa-chevron-right ml-1"></i>
           </button>
         </div>
       </div>
     </div>
-  </div>
+  </main>
 
-  <!-- Modal Create/Edit -->
-  <div id="modalForm" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-      <div class="p-6 border-b border-slate-200 flex justify-between items-center sticky top-0 bg-white">
-        <h2 id="modalTitle" class="text-lg font-bold text-slate-800">Tambah Permintaan</h2>
-        <button id="btnCloseModal" class="text-slate-400 hover:text-slate-600 text-lg">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+  <!-- MODAL FORM (CREATE & EDIT) -->
+  <div id="modalForm" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div class="px-6 py-4 border-b border-slate-700 flex justify-between items-center sticky top-0 bg-slate-800 z-10">
+        <h3 id="modalTitle" class="text-lg font-bold text-white">Tambah Data Permintaan</h3>
+        <button id="btnCloseModal" class="text-slate-400 hover:text-white text-xl">&times;</button>
       </div>
-      
-      <form id="permintaanForm" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Hidden key field for Editing -->
-        <input type="hidden" id="recordKey">
+
+      <form id="formPermintaan" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="hidden" id="inputNodeKey" value="">
 
         <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">Tiket ID *</label>
-          <input type="text" id="tiket_id" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Tiket ID *</label>
+          <input type="text" id="f_tiket_id" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">Status</label>
-          <select id="status" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Status *</label>
+          <select id="f_status" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
             <option value="OPEN">OPEN</option>
             <option value="PROGRESS">PROGRESS</option>
             <option value="CLOSED">CLOSED</option>
+            <option value="PENDING">PENDING</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">Kategori Pekerjaan</label>
-          <input type="text" id="kategori_pekerjaan" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Kategori Pekerjaan</label>
+          <input type="text" id="f_kategori_pekerjaan" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">Segmen</label>
-          <input type="text" id="segmen" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Segmen</label>
+          <input type="text" id="f_segmen" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">Nama Teknisi</label>
-          <input type="text" id="nama_teknisi" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Nama Teknisi</label>
+          <input type="text" id="f_nama_teknisi" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">Username Telegram Teknisi</label>
-          <input type="text" id="username_teknisi" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Username Teknisi</label>
+          <input type="text" id="f_username_teknisi" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">ID Telegram Teknisi</label>
-          <input type="text" id="id_telegram_teknisi" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">ID Telegram Teknisi</label>
+          <input type="text" id="f_id_telegram_teknisi" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">Nama HD</label>
-          <input type="text" id="nama_hd" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Nama HD</label>
+          <input type="text" id="f_nama_hd" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">NIK HD</label>
-          <input type="text" id="nik_hd" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">NIK HD</label>
+          <input type="text" id="f_nik_hd" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">ID Telegram HD</label>
-          <input type="text" id="id_telegram_hd" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">ID Telegram HD</label>
+          <input type="text" id="f_id_telegram_hd" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">Chat ID</label>
-          <input type="text" id="chat_id" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Chat ID</label>
+          <input type="text" id="f_chat_id" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">Message ID</label>
-          <input type="text" id="message_id" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Message ID</label>
+          <input type="text" id="f_message_id" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">File ID</label>
-          <input type="text" id="file_id" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">File ID</label>
+          <input type="text" id="f_file_id" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">Timestamp Created</label>
-          <input type="text" id="timestamp_created" readonly class="w-full px-3 py-2 border border-slate-200 bg-slate-100 rounded-lg text-sm text-slate-500">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Timestamp Created</label>
+          <input type="text" id="f_timestamp_created" placeholder="Auto-generated jika kosong" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
         </div>
 
-        <div class="col-span-1 md:col-span-2">
-          <label class="block text-xs font-medium text-slate-700 mb-1">Pesan</label>
-          <textarea id="pesan" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Pesan</label>
+          <textarea id="f_pesan" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none"></textarea>
         </div>
 
-        <div class="col-span-1 md:col-span-2">
-          <label class="block text-xs font-medium text-slate-700 mb-1">Keterangan</label>
-          <textarea id="keterangan" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Keterangan</label>
+          <textarea id="f_keterangan" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none"></textarea>
         </div>
 
-        <div class="col-span-1 md:col-span-2 flex justify-end gap-3 mt-4 pt-4 border-t border-slate-200">
-          <button type="button" id="btnCancelModal" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm hover:bg-slate-50">Batal</button>
-          <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium">Simpan</button>
+        <div class="md:col-span-2 flex justify-end gap-3 mt-4 border-t border-slate-700 pt-4">
+          <button type="button" id="btnCancelForm" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition">Batal</button>
+          <button type="submit" id="btnSaveForm" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-semibold transition flex items-center gap-2">
+            <span>Simpan Data</span>
+          </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Firebase Modular SDK -->
+  <!-- Firebase Scripts (Modular Version 10) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
-      getDatabase, ref, push, set, update, remove, 
-      query, orderByChild, limitToLast, endAt, get, equalTo
+      getDatabase, 
+      ref, 
+      get, 
+      push, 
+      update, 
+      remove, 
+      query, 
+      orderByChild, 
+      limitToLast, 
+      endAt, 
+      equalTo 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // Konfigurasi Firebase
+    // Konfigurasi Firebase Anda
     const firebaseConfig = {
       apiKey: "AIzaSyCIEJHWd7EBzC0FeWgtlmNF0CHpPcyCrK4",
       authDomain: "forminput-9c324.firebaseapp.com",
@@ -220,329 +250,381 @@
       databaseURL: "https://forminput-9c324-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
 
-    // Inisialisasi Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const nodePath = "permintaan";
+    const dbRef = ref(db, "permintaan");
 
-    // State Pagination
-    let pageSize = 10;
-    let pageHistory = []; // Menyimpan timestamp batas atas setiap halaman
-    let currentPage = 1;
-    let currentData = {};
+    // State Management
+    let currentLimit = 25;
+    let pageHistory = []; // menyimpan key/timestamp batas halaman
+    let currentDataMap = new Map(); // Simpan data halaman aktif untuk pencarian cepat saat edit
 
     // DOM Elements
-    const tableBody = document.getElementById('tableBody');
-    const loadingRow = document.getElementById('loadingRow');
-    const btnPrevPage = document.getElementById('btnPrevPage');
-    const btnNextPage = document.getElementById('btnNextPage');
-    const currentPageDisplay = document.getElementById('currentPageDisplay');
-    const pageSizeSelect = document.getElementById('pageSizeSelect');
-    const searchForm = document.getElementById('searchForm');
-    const searchInput = document.getElementById('searchInput');
-    const btnRefresh = document.getElementById('btnRefresh');
+    const tableBody = document.getElementById("tableBody");
+    const selectLimit = document.getElementById("selectLimit");
+    const btnPrevPage = document.getElementById("btnPrevPage");
+    const btnNextPage = document.getElementById("btnNextPage");
+    const infoPaginasi = document.getElementById("infoPaginasi");
+    const formCari = document.getElementById("formCari");
+    const inputCariTiket = document.getElementById("inputCariTiket");
+    const btnResetCari = document.getElementById("btnResetCari");
+    
+    const modalForm = document.getElementById("modalForm");
+    const modalTitle = document.getElementById("modalTitle");
+    const formPermintaan = document.getElementById("formPermintaan");
+    const btnTambahData = document.getElementById("btnTambahData");
+    const btnCloseModal = document.getElementById("btnCloseModal");
+    const btnCancelForm = document.getElementById("btnCancelForm");
 
-    const modalForm = document.getElementById('modalForm');
-    const permintaanForm = document.getElementById('permintaanForm');
-    const btnOpenCreateModal = document.getElementById('btnOpenCreateModal');
-    const btnCloseModal = document.getElementById('btnCloseModal');
-    const btnCancelModal = document.getElementById('btnCancelModal');
-    const modalTitle = document.getElementById('modalTitle');
+    // Initialize App
+    window.addEventListener("DOMContentLoaded", () => {
+      loadDataPage();
+      setupEventListeners();
+    });
 
-    // --- FUNCTION: FETCH DATA WITH PAGINATION (Optimized) ---
-    async function loadPage(endAtTimestamp = null, isNext = true) {
-      showLoading(true);
-      
+    function setupEventListeners() {
+      selectLimit.addEventListener("change", (e) => {
+        currentLimit = parseInt(e.target.value);
+        pageHistory = [];
+        loadDataPage();
+      });
+
+      btnNextPage.addEventListener("click", () => {
+        if (currentDataMap.size > 0) {
+          const firstKey = Array.from(currentDataMap.values())[0];
+          pageHistory.push(firstKey.timestamp_created || null);
+          loadDataPage(firstKey.timestamp_created);
+        }
+      });
+
+      btnPrevPage.addEventListener("click", () => {
+        pageHistory.pop();
+        const prevBound = pageHistory[pageHistory.length - 1];
+        loadDataPage(prevBound);
+      });
+
+      formCari.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const queryTiket = inputCariTiket.value.trim();
+        if (queryTiket) {
+          cariByTiketId(queryTiket);
+        }
+      });
+
+      btnResetCari.addEventListener("click", () => {
+        inputCariTiket.value = "";
+        btnResetCari.classList.add("hidden");
+        pageHistory = [];
+        loadDataPage();
+      });
+
+      // Modal Triggers
+      btnTambahData.addEventListener("click", () => openModal("create"));
+      btnCloseModal.addEventListener("click", closeModal);
+      btnCancelForm.addEventListener("click", closeModal);
+
+      // Submit Form (Create / Update)
+      formPermintaan.addEventListener("submit", handleFormSubmit);
+
+      // Event Delegation untuk Tombol Edit & Hapus pada Tabel
+      tableBody.addEventListener("click", (e) => {
+        const targetBtn = e.target.closest("button");
+        if (!targetBtn) return;
+
+        const key = targetBtn.getAttribute("data-key");
+        const action = targetBtn.getAttribute("data-action");
+
+        if (action === "edit") {
+          editDataByKey(key);
+        } else if (action === "delete") {
+          hapusDataByKey(key);
+        }
+      });
+    }
+
+    // LOAD DATA PER PAGINASI (Ringan & Cepat)
+    async function loadDataPage(endAtTimestamp = null) {
+      showTableLoading();
       try {
-        let dbQuery;
-        const dbRef = ref(db, nodePath);
-
-        // Ambil N + 1 data untuk mengecek ketersediaan halaman berikutnya
-        if (endAtTimestamp !== null) {
-          dbQuery = query(dbRef, orderByChild('timestamp_created'), endAt(endAtTimestamp), limitToLast(pageSize + 1));
+        let q;
+        if (endAtTimestamp) {
+          q = query(
+            dbRef, 
+            orderByChild("timestamp_created"), 
+            endAt(endAtTimestamp), 
+            limitToLast(currentLimit + 1)
+          );
         } else {
-          dbQuery = query(dbRef, orderByChild('timestamp_created'), limitToLast(pageSize + 1));
+          q = query(
+            dbRef, 
+            orderByChild("timestamp_created"), 
+            limitToLast(currentLimit + 1)
+          );
         }
 
-        const snapshot = await get(dbQuery);
-        
+        const snapshot = await get(q);
+        currentDataMap.clear();
+
         if (!snapshot.exists()) {
-          tableBody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400">Tidak ada data ditemukan</td></tr>`;
+          renderTable([]);
+          infoPaginasi.innerText = "Tidak ada data ditemukan.";
+          btnPrevPage.disabled = pageHistory.length === 0;
           btnNextPage.disabled = true;
-          btnPrevPage.disabled = currentPage === 1;
-          showLoading(false);
           return;
         }
 
         let items = [];
-        snapshot.forEach((childSnap) => {
+        snapshot.forEach((child) => {
           items.push({
-            key: childSnap.key,
-            ...childSnap.val()
+            key: child.key,
+            ...child.val()
           });
         });
 
-        // Firebase limitToLast mengembalikan urutan ascending, balikkan urutan ke descending (terbaru di atas)
-        items.reverse();
+        // Simpan data di map local
+        items.forEach(item => currentDataMap.set(item.key, item));
 
-        let hasMore = false;
-        if (items.length > pageSize) {
-          hasMore = true;
-          items.pop(); // Buang data tambahan yang hanya dipakai untuk cek ketersediaan
+        btnPrevPage.disabled = pageHistory.length === 0;
+        btnNextPage.disabled = items.length <= currentLimit;
+
+        // Potong kelebihan 1 item untuk paginasi halaman berikutnya
+        if (items.length > currentLimit) {
+          items.shift();
         }
 
-        // Render data ke tabel
-        renderTable(items);
+        renderTable(items.reverse());
+        infoPaginasi.innerText = `Menampilkan ${items.length} baris data terbaru.`;
 
-        // Atur status Tombol
-        btnNextPage.disabled = !hasMore;
-        btnPrevPage.disabled = currentPage === 1;
-        currentPageDisplay.textContent = currentPage;
-
-        // Simpan titik batas timestamp untuk halaman saat ini
-        if (items.length > 0) {
-          currentData = items;
-        }
-
-      } catch (error) {
-        console.error("Gagal mengambil data:", error);
-        alert("Terjadi kesalahan saat memuat data: " + error.message);
-      } finally {
-        showLoading(false);
-      }
-    }
-
-    // --- FUNCTION: DIRECT SEARCH BY TICKET ID ---
-    async function searchByTicketId(tiketId) {
-      if (!tiketId.trim()) {
-        resetPagination();
-        return;
-      }
-
-      showLoading(true);
-      try {
-        const dbRef = ref(db, nodePath);
-        const searchQuery = query(dbRef, orderByChild('tiket_id'), equalTo(tiketId.trim()));
-        const snapshot = await get(searchQuery);
-
-        if (snapshot.exists()) {
-          let items = [];
-          snapshot.forEach((child) => {
-            items.push({ key: child.key, ...child.val() });
-          });
-          renderTable(items);
-        } else {
-          tableBody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400">Tiket ID "<b>${tiketId}</b>" tidak ditemukan.</td></tr>`;
-        }
-        btnNextPage.disabled = true;
-        btnPrevPage.disabled = true;
       } catch (err) {
-        console.error("Error search:", err);
-        alert("Pencarian gagal: " + err.message);
-      } finally {
-        showLoading(false);
+        console.error("Gagal load data:", err);
+        showAlert("Error memuat data: " + err.message, "danger");
       }
     }
 
-    // --- FUNCTION: RENDER TABLE BODY ---
+    // PENCARIAN TIKET SPESIFIK (equalTo)
+    async function cariByTiketId(tiketId) {
+      showTableLoading();
+      btnResetCari.classList.remove("hidden");
+      try {
+        const q = query(dbRef, orderByChild("tiket_id"), equalTo(tiketId));
+        const snapshot = await get(q);
+
+        currentDataMap.clear();
+        if (!snapshot.exists()) {
+          renderTable([]);
+          infoPaginasi.innerText = `Tiket ID "${tiketId}" tidak ditemukan.`;
+          btnPrevPage.disabled = true;
+          btnNextPage.disabled = true;
+          return;
+        }
+
+        let items = [];
+        snapshot.forEach((child) => {
+          items.push({
+            key: child.key,
+            ...child.val()
+          });
+        });
+
+        items.forEach(item => currentDataMap.set(item.key, item));
+        renderTable(items);
+        infoPaginasi.innerText = `Ditemukan ${items.length} data untuk Tiket ID: ${tiketId}`;
+        btnPrevPage.disabled = true;
+        btnNextPage.disabled = true;
+
+      } catch (err) {
+        console.error("Gagal cari data:", err);
+        showAlert("Pencarian gagal: " + err.message, "danger");
+      }
+    }
+
+    // RENDER TABLE TO DOM
     function renderTable(items) {
       if (items.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400">Data kosong</td></tr>`;
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center py-8 text-slate-500">
+              <i class="fa-solid fa-folder-open text-3xl mb-2"></i>
+              <p>Data kosong atau tidak ditemukan.</p>
+            </td>
+          </tr>`;
         return;
       }
 
-      tableBody.innerHTML = items.map(item => {
-        const createdDate = item.timestamp_created ? new Date(item.timestamp_created).toLocaleString('id-ID') : '-';
-        
-        // Color badge status
-        let statusColor = "bg-slate-100 text-slate-600";
-        if (item.status === "OPEN") statusColor = "bg-amber-100 text-amber-700";
-        if (item.status === "PROGRESS") statusColor = "bg-blue-100 text-blue-700";
-        if (item.status === "CLOSED") statusColor = "bg-emerald-100 text-emerald-700";
-
-        return `
-          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-            <td class="p-3 font-semibold text-indigo-600">${item.tiket_id || '-'}</td>
-            <td class="p-3">
-              <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${statusColor}">${item.status || 'OPEN'}</span>
-            </td>
-            <td class="p-3">
-              <div class="font-medium text-slate-800">${item.kategori_pekerjaan || '-'}</div>
-              <div class="text-xs text-slate-400">${item.segmen || '-'}</div>
-            </td>
-            <td class="p-3">
-              <div class="text-slate-700">${item.nama_teknisi || '-'}</div>
-              <div class="text-xs text-slate-400">@${item.username_teknisi || '-'}</div>
-            </td>
-            <td class="p-3 text-slate-700">${item.nama_hd || '-'}</td>
-            <td class="p-3 text-xs text-slate-500">${createdDate}</td>
-            <td class="p-3 text-center">
-              <div class="flex justify-center gap-2">
-                <button onclick="window.editRecord('${item.key}')" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded transition" title="Edit">
-                  <i class="fa-solid fa-pen-to-square"></i>
-                </button>
-                <button onclick="window.deleteRecord('${item.key}')" class="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded transition" title="Hapus">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
+      tableBody.innerHTML = items.map(item => `
+        <tr class="hover:bg-slate-700/40 transition">
+          <td class="px-4 py-3 font-semibold text-indigo-400">${item.tiket_id || '-'}</td>
+          <td class="px-4 py-3">${getBadgeStatus(item.status)}</td>
+          <td class="px-4 py-3">
+            <div class="font-medium text-slate-200">${item.kategori_pekerjaan || '-'}</div>
+            <div class="text-xs text-slate-400">${item.segmen || '-'}</div>
+          </td>
+          <td class="px-4 py-3">
+            <div>${item.nama_teknisi || '-'}</div>
+            <div class="text-xs text-slate-500">@${item.username_teknisi || '-'}</div>
+          </td>
+          <td class="px-4 py-3">${item.nama_hd || '-'}</td>
+          <td class="px-4 py-3 text-xs text-slate-400">${formatDate(item.timestamp_created)}</td>
+          <td class="px-4 py-3 text-center">
+            <div class="flex items-center justify-center gap-2">
+              <button data-key="${item.key}" data-action="edit" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-xs px-2.5 py-1.5 rounded-md font-medium transition flex items-center gap-1">
+                <i class="fa-solid fa-pen-to-square"></i> Edit
+              </button>
+              <button data-key="${item.key}" data-action="delete" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 text-xs px-2.5 py-1.5 rounded-md font-medium transition flex items-center gap-1">
+                <i class="fa-solid fa-trash-can"></i> Hapus
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
     }
 
-    // --- PAGINATION HANDLERS ---
-    function resetPagination() {
-      currentPage = 1;
-      pageHistory = [];
-      loadPage();
-    }
-
-    btnNextPage.addEventListener('click', () => {
-      if (currentData.length > 0) {
-        // Ambil timestamp item terakhir di halaman saat ini
-        const lastItemTimestamp = currentData[currentData.length - 1].timestamp_created;
-        pageHistory.push(lastItemTimestamp);
-        currentPage++;
-        loadPage(lastItemTimestamp - 1, true);
-      }
-    });
-
-    btnPrevPage.addEventListener('click', () => {
-      if (currentPage > 1) {
-        pageHistory.pop();
-        currentPage--;
-        const previousTimestamp = pageHistory.length > 0 ? pageHistory[pageHistory.length - 1] - 1 : null;
-        loadPage(previousTimestamp, false);
-      }
-    });
-
-    pageSizeSelect.addEventListener('change', (e) => {
-      pageSize = parseInt(e.target.value);
-      resetPagination();
-    });
-
-    btnRefresh.addEventListener('click', () => {
-      searchInput.value = '';
-      resetPagination();
-    });
-
-    searchForm.addEventListener('submit', (e) => {
+    // FORM ACTION: CREATE / UPDATE
+    async function handleFormSubmit(e) {
       e.preventDefault();
-      searchByTicketId(searchInput.value);
-    });
+      const nodeKey = document.getElementById("inputNodeKey").value;
 
-    // --- CREATE & UPDATE HANDLERS ---
-    permintaanForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const key = document.getElementById('recordKey').value;
-      const formData = {
-        tiket_id: document.getElementById('tiket_id').value,
-        status: document.getElementById('status').value,
-        kategori_pekerjaan: document.getElementById('kategori_pekerjaan').value,
-        segmen: document.getElementById('segmen').value,
-        nama_teknisi: document.getElementById('nama_teknisi').value,
-        username_teknisi: document.getElementById('username_teknisi').value,
-        id_telegram_teknisi: document.getElementById('id_telegram_teknisi').value,
-        nama_hd: document.getElementById('nama_hd').value,
-        nik_hd: document.getElementById('nik_hd').value,
-        id_telegram_hd: document.getElementById('id_telegram_hd').value,
-        chat_id: document.getElementById('chat_id').value,
-        message_id: document.getElementById('message_id').value,
-        file_id: document.getElementById('file_id').value,
-        pesan: document.getElementById('pesan').value,
-        keterangan: document.getElementById('keterangan').value,
+      const payload = {
+        tiket_id: document.getElementById("f_tiket_id").value.trim(),
+        status: document.getElementById("f_status").value,
+        kategori_pekerjaan: document.getElementById("f_kategori_pekerjaan").value.trim(),
+        segmen: document.getElementById("f_segmen").value.trim(),
+        nama_teknisi: document.getElementById("f_nama_teknisi").value.trim(),
+        username_teknisi: document.getElementById("f_username_teknisi").value.trim(),
+        id_telegram_teknisi: document.getElementById("f_id_telegram_teknisi").value.trim(),
+        nama_hd: document.getElementById("f_nama_hd").value.trim(),
+        nik_hd: document.getElementById("f_nik_hd").value.trim(),
+        id_telegram_hd: document.getElementById("f_id_telegram_hd").value.trim(),
+        chat_id: document.getElementById("f_chat_id").value.trim(),
+        message_id: document.getElementById("f_message_id").value.trim(),
+        file_id: document.getElementById("f_file_id").value.trim(),
+        pesan: document.getElementById("f_pesan").value.trim(),
+        keterangan: document.getElementById("f_keterangan").value.trim(),
+        timestamp_created: document.getElementById("f_timestamp_created").value.trim() || new Date().toISOString()
       };
 
       try {
-        if (key) {
-          // UPDATE
-          if (formData.status === 'CLOSED' && !formData.timestamp_close) {
-            formData.timestamp_close = Date.now();
-          }
-          await update(ref(db, `${nodePath}/${key}`), formData);
-          alert('Data berhasil diperbarui!');
+        if (nodeKey) {
+          // UPDATE DATA EXISTING
+          const targetRef = ref(db, `permintaan/${nodeKey}`);
+          await update(targetRef, payload);
+          showAlert("Data berhasil diperbarui!", "success");
         } else {
-          // CREATE
-          formData.timestamp_created = Date.now();
-          formData.timestamp_taken = Date.now();
-          formData.timestamp_close = formData.status === 'CLOSED' ? Date.now() : "";
-          const newRef = push(ref(db, nodePath));
-          await set(newRef, formData);
-          alert('Data berhasil ditambahkan!');
+          // TAMBAH DATA BARU (PUSH)
+          await push(dbRef, payload);
+          showAlert("Data baru berhasil ditambahkan!", "success");
         }
         closeModal();
-        resetPagination();
+        loadDataPage();
       } catch (err) {
-        alert("Gagal menyimpan data: " + err.message);
+        console.error("Gagal menyimpan:", err);
+        showAlert("Gagal menyimpan data: " + err.message, "danger");
       }
-    });
+    }
 
-    // Modal Operations
-    window.editRecord = (key) => {
-      const item = currentData.find(d => d.key === key);
-      if (!item) return;
+    // EDIT DATA
+    function editDataByKey(key) {
+      const data = currentDataMap.get(key);
+      if (!data) return;
 
-      document.getElementById('recordKey').value = key;
-      document.getElementById('tiket_id').value = item.tiket_id || '';
-      document.getElementById('status').value = item.status || 'OPEN';
-      document.getElementById('kategori_pekerjaan').value = item.kategori_pekerjaan || '';
-      document.getElementById('segmen').value = item.segmen || '';
-      document.getElementById('nama_teknisi').value = item.nama_teknisi || '';
-      document.getElementById('username_teknisi').value = item.username_teknisi || '';
-      document.getElementById('id_telegram_teknisi').value = item.id_telegram_teknisi || '';
-      document.getElementById('nama_hd').value = item.nama_hd || '';
-      document.getElementById('nik_hd').value = item.nik_hd || '';
-      document.getElementById('id_telegram_hd').value = item.id_telegram_hd || '';
-      document.getElementById('chat_id').value = item.chat_id || '';
-      document.getElementById('message_id').value = item.message_id || '';
-      document.getElementById('file_id').value = item.file_id || '';
-      document.getElementById('timestamp_created').value = item.timestamp_created ? new Date(item.timestamp_created).toLocaleString() : '';
-      document.getElementById('pesan').value = item.pesan || '';
-      document.getElementById('keterangan').value = item.keterangan || '';
+      document.getElementById("inputNodeKey").value = key;
+      document.getElementById("f_tiket_id").value = data.tiket_id || "";
+      document.getElementById("f_status").value = data.status || "OPEN";
+      document.getElementById("f_kategori_pekerjaan").value = data.kategori_pekerjaan || "";
+      document.getElementById("f_segmen").value = data.segmen || "";
+      document.getElementById("f_nama_teknisi").value = data.nama_teknisi || "";
+      document.getElementById("f_username_teknisi").value = data.username_teknisi || "";
+      document.getElementById("f_id_telegram_teknisi").value = data.id_telegram_teknisi || "";
+      document.getElementById("f_nama_hd").value = data.nama_hd || "";
+      document.getElementById("f_nik_hd").value = data.nik_hd || "";
+      document.getElementById("f_id_telegram_hd").value = data.id_telegram_hd || "";
+      document.getElementById("f_chat_id").value = data.chat_id || "";
+      document.getElementById("f_message_id").value = data.message_id || "";
+      document.getElementById("f_file_id").value = data.file_id || "";
+      document.getElementById("f_pesan").value = data.pesan || "";
+      document.getElementById("f_keterangan").value = data.keterangan || "";
+      document.getElementById("f_timestamp_created").value = data.timestamp_created || "";
 
-      modalTitle.textContent = "Edit Permintaan";
-      modalForm.classList.remove('hidden');
-    };
+      openModal("edit");
+    }
 
-    window.deleteRecord = async (key) => {
-      if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
+    // HAPUS DATA
+    async function hapusDataByKey(key) {
+      const data = currentDataMap.get(key);
+      const label = data ? data.tiket_id : key;
+
+      if (confirm(`Apakah Anda yakin ingin menghapus data dengan Tiket ID "${label}"?`)) {
         try {
-          await remove(ref(db, `${nodePath}/${key}`));
-          alert("Data berhasil dihapus.");
-          resetPagination();
+          const targetRef = ref(db, `permintaan/${key}`);
+          await remove(targetRef);
+          showAlert(`Data "${label}" berhasil dihapus.`, "success");
+          loadDataPage();
         } catch (err) {
-          alert("Gagal menghapus: " + err.message);
+          console.error("Gagal menghapus:", err);
+          showAlert("Gagal menghapus data: " + err.message, "danger");
         }
       }
-    };
+    }
 
-    btnOpenCreateModal.addEventListener('click', () => {
-      permintaanForm.reset();
-      document.getElementById('recordKey').value = '';
-      document.getElementById('timestamp_created').value = 'Otomatis diisi sistem';
-      modalTitle.textContent = "Tambah Permintaan Baru";
-      modalForm.classList.remove('hidden');
-    });
+    // MODAL UTILS
+    function openModal(mode = "create") {
+      if (mode === "create") {
+        formPermintaan.reset();
+        document.getElementById("inputNodeKey").value = "";
+        modalTitle.innerText = "Tambah Data Permintaan";
+      } else {
+        modalTitle.innerText = "Edit Data Permintaan";
+      }
+      modalForm.classList.remove("hidden");
+    }
 
     function closeModal() {
-      modalForm.classList.add('hidden');
+      modalForm.classList.add("hidden");
     }
 
-    btnCloseModal.addEventListener('click', closeModal);
-    btnCancelModal.addEventListener('click', closeModal);
+    // UI HELPER FUNCTIONS
+    function showTableLoading() {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center py-10 text-slate-500">
+            <i class="fa-solid fa-circle-notch fa-spin text-2xl text-indigo-500 mb-2"></i>
+            <p>Memuat data...</p>
+          </td>
+        </tr>`;
+    }
 
-    function showLoading(state) {
-      if (state) {
-        loadingRow.classList.remove('hidden');
-      } else {
-        loadingRow.classList.add('hidden');
+    function showAlert(msg, type = "success") {
+      const alertBox = document.getElementById("alertBox");
+      const alertMessage = document.getElementById("alertMessage");
+
+      alertBox.className = `mb-4 p-4 rounded-lg text-sm font-medium flex justify-between items-center ${
+        type === "success" ? "bg-emerald-950/80 border border-emerald-700 text-emerald-200" : "bg-rose-950/80 border border-rose-700 text-rose-200"
+      }`;
+      alertMessage.innerText = msg;
+      alertBox.classList.remove("hidden");
+
+      setTimeout(() => alertBox.classList.add("hidden"), 5000);
+    }
+
+    function getBadgeStatus(status) {
+      if (!status) return `<span class="bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded font-bold">UNKNOWN</span>`;
+      const st = status.toUpperCase();
+      if (st === "OPEN") return `<span class="bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[10px] px-2 py-0.5 rounded font-bold">OPEN</span>`;
+      if (st === "CLOSED") return `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] px-2 py-0.5 rounded font-bold">CLOSED</span>`;
+      if (st === "PROGRESS") return `<span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] px-2 py-0.5 rounded font-bold">PROGRESS</span>`;
+      return `<span class="bg-purple-500/20 text-purple-400 border border-purple-500/30 text-[10px] px-2 py-0.5 rounded font-bold">${st}</span>`;
+    }
+
+    function formatDate(ts) {
+      if (!ts) return "-";
+      try {
+        const d = new Date(ts);
+        if (isNaN(d.getTime())) return ts;
+        return d.toLocaleString("id-ID", { dateStyle: "short", timeStyle: "medium" });
+      } catch (e) {
+        return ts;
       }
     }
-
-    // Initial Load
-    resetPagination();
   </script>
 </body>
 </html>
