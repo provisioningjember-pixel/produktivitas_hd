@@ -109,20 +109,25 @@ app.post('/api/webhook', async (req, res) => {
       const safePesan = escapeHtml(textContent);
       const safeNama = escapeHtml(namaTeknisi);
 
-      const replyMessage = 
-        `✅ <b>Tiket Permintaan Berhasil Dibuat!</b>\n\n` +
-        `🎫 <b>Ticket ID:</b> <code>${ticketId}</code>\n` +
+      //const replyMessage = 
+        //`🎫 <b>Ticket ID:</b> <code>${ticketId}</code>\n`;
+        //`✅ <b>Tiket Permintaan Berhasil Dibuat!</b>\n\n` +
+        //`🎫 <b>Ticket ID:</b> <code>${ticketId}</code>\n` +
         //`🏷️ <b>Segmen:</b> <code>${segmen}</code>\n` +
         //`👤 <b>Teknisi:</b> ${safeNama} (${usernameTeknisi || idTelegramTeknisi})\n` +
         //`📌 <b>Status:</b> <code>OPEN</code>\n` +
         //`📷 <b>Lampiran Foto:</b> ${fileId ? 'Ada' : 'Tidak ada'}\n\n` +
         //`📝 <b>Pesan:</b>\n<i>${safePesan}</i>\n\n` +
-        `<i>Tim Helpdesk akan segera merespon tiket ini.</i>`;
+        //`<i>Tim Helpdesk akan segera merespon tiket ini.</i>`;
 
-      await bot.sendMessage(message.chat.id, replyMessage, {
-        reply_to_message_id: message.message_id,
-        parse_mode: 'HTML'
-      });
+      //await bot.sendMessage(message.chat.id, replyMessage, {
+        //reply_to_message_id: message.message_id,
+        //parse_mode: 'HTML'
+      //});
+      await bot.setMessageReaction(message.chat.id, message.message_id, {
+  reaction: [{ type: 'emoji', emoji: '👍' }] // Bisa diganti '👌', '⚡', '🎫', '✅'
+});
+      
     }
 
     res.status(200).send('OK');
