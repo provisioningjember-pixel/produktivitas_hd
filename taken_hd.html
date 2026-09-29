@@ -1021,7 +1021,9 @@ function bindOrderEvents() {
           });
 
           if (targetChatId) {
-            const pesanClose = `<b>[Laporan telah dikerjakan]</b>\n\nTiket <code>${tId}</code> telah diselesaikan oleh HD <b>${activeUser.nama || activeUser.nik}</b>.`;
+            //const pesanClose = `<b>[Laporan telah dikerjakan]</b>\n\nTiket <code>${tId}</code> telah diselesaikan oleh HD <b>${activeUser.nama || activeUser.nik}</b>.`;
+            //sendTelegramReply(targetChatId, item.message_id, pesanClose);
+            const pesanClose = `Tiket <code>${tId}</code> telah diselesaikan oleh HD <b>${activeUser.nama || activeUser.nik}</b>.`;
             sendTelegramReply(targetChatId, item.message_id, pesanClose);
           }
 
