@@ -984,7 +984,7 @@ function bindOrderEvents() {
         });
 
         if (targetChatId) {
-          const textNotice = `<b>[TAKE ORDER]</b>\n\nTiket <code>${tId}</code> telah diambil dan sedang diproses oleh HD <b>${activeUser.nama || activeUser.nik}</b>.`;
+          const textNotice = `cek oleh : <b>${activeUser.nama || activeUser.nik}</b>.`;
           sendTelegramReply(targetChatId, item.message_id, textNotice);
         }
 
